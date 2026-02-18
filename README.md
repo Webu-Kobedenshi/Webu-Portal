@@ -18,6 +18,19 @@ Next.js(App Router) + NestJS(GraphQL schema-first) + PostgreSQL(Prisma) を Dock
 
 ## 起動
 
+0. 環境変数を作成（初回のみ）
+
+```bash
+cp .env.example .env
+```
+
+Google OAuth を使うため、最低限以下を `.env` に設定してください。
+
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `NEXTAUTH_SECRET`
+- `AUTH_JWT_SECRET`
+
 1. ルートで起動
 
 ```bash
@@ -53,5 +66,5 @@ pnpm prisma:studio
 
 ## 備考
 
-- 認証は未導入（要相談）
+- Google OAuth（`@kdps.ac.jp` ドメイン制限）を前提
 - Node 22 LTS 想定のため、Node 23 以上の場合は切り替えを推奨

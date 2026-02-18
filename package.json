@@ -13,7 +13,8 @@
     "typecheck": "pnpm -r typecheck",
     "prisma:generate": "pnpm --filter service exec prisma generate",
     "prisma:migrate": "pnpm --filter service exec prisma migrate dev",
-    "prisma:studio": "pnpm --filter service exec prisma studio"
+    "prisma:studio": "pnpm --filter service exec prisma studio",
+    "prisma:seed": "pnpm --filter service run db:seed"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4"

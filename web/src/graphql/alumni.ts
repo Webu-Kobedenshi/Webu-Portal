@@ -1,3 +1,5 @@
+import { authOptions } from "@/auth";
+import { getServerSession } from "next-auth";
 import type { AlumniConnection, AlumniProfile, Department } from "./types";
 
 type AlumniListData = {
@@ -37,6 +39,17 @@ export async function fetchAlumniList(params: {
   limit?: number;
   offset?: number;
 }) {
+  const session = await getServerSession(authOptions);
+  const serviceToken = session?.serviceToken;
+  if (!serviceToken) {
+    return {
+      alumniList: [] satisfies AlumniProfile[],
+      totalCount: 0,
+      hasNextPage: false,
+      error: "Authentication required",
+    };
+  }
+
   const endpoint = process.env.GRAPHQL_ENDPOINT ?? "http://localhost:4000/graphql";
   const limit = params.limit ?? 20;
   const offset = params.offset ?? 0;
@@ -46,6 +59,7 @@ export async function fetchAlumniList(params: {
       method: "POST",
       headers: {
         "content-type": "application/json",
+        authorization: `Bearer ${serviceToken}`,
       },
       cache: "no-store",
       body: JSON.stringify({

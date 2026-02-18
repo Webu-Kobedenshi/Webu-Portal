@@ -1,6 +1,7 @@
 import { NotFoundException, UseGuards } from "@nestjs/common";
 import { Args, Mutation, Query, Resolver } from "@nestjs/graphql";
-import { CurrentUserId } from "../../../common/auth/current-user-id.decorator";
+import type { User } from "@prisma/client";
+import { CurrentUser } from "../../../common/auth/current-user.decorator";
 import { GqlAuthGuard } from "../../../common/auth/gql-auth.guard";
 import type { AlumniCommandService } from "../application/commands/alumni-command.service";
 import type { AlumniConnectionDto, AlumniProfileDto, UserDto } from "../application/dto/alumni.dto";
@@ -26,6 +27,7 @@ type UpdateAlumniProfileInput = {
 };
 
 @Resolver()
+@UseGuards(GqlAuthGuard)
 export class AlumniResolver {
   constructor(
     private readonly alumniQueryService: AlumniQueryService,
@@ -50,32 +52,30 @@ export class AlumniResolver {
     return this.alumniQueryService.getAlumniDetail(id);
   }
 
-  @UseGuards(GqlAuthGuard)
   @Query("getMyProfile")
-  async getMyProfile(@CurrentUserId() userId: string): Promise<UserDto> {
-    const user = await this.alumniQueryService.getMyProfile(userId);
-    if (!user) {
+  async getMyProfile(@CurrentUser() user: User): Promise<UserDto> {
+    const userId = user.id;
+    const profile = await this.alumniQueryService.getMyProfile(userId);
+    if (!profile) {
       throw new NotFoundException("User not found");
     }
 
-    return user;
+    return profile;
   }
 
-  @UseGuards(GqlAuthGuard)
   @Mutation("updateInitialSettings")
   updateInitialSettings(
-    @CurrentUserId() userId: string,
+    @CurrentUser() user: User,
     @Args("input") input: InitialSettingsInput,
   ): Promise<UserDto> {
-    return this.alumniCommandService.updateInitialSettings(userId, input);
+    return this.alumniCommandService.updateInitialSettings(user.id, input);
   }
 
-  @UseGuards(GqlAuthGuard)
   @Mutation("updateAlumniProfile")
   updateAlumniProfile(
-    @CurrentUserId() userId: string,
+    @CurrentUser() user: User,
     @Args("input") input: UpdateAlumniProfileInput,
   ): Promise<AlumniProfileDto> {
-    return this.alumniCommandService.updateAlumniProfile(userId, input);
+    return this.alumniCommandService.updateAlumniProfile(user.id, input);
   }
 }
