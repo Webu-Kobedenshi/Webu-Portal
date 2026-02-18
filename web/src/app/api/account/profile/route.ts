@@ -1,0 +1,182 @@
+import { authOptions } from "@/auth";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
+
+type Department =
+  | "IT_EXPERT"
+  | "IT_SPECIALIST"
+  | "INFORMATION_PROCESS"
+  | "PROGRAMMING"
+  | "AI_SYSTEM"
+  | "ADVANCED_STUDIES"
+  | "INFO_BUSINESS"
+  | "INFO_ENGINEERING"
+  | "GAME_RESEARCH"
+  | "GAME_ENGINEER"
+  | "GAME_SOFTWARE"
+  | "ESPORTS"
+  | "CG_ANIMATION"
+  | "DIGITAL_ANIME"
+  | "GRAPHIC_DESIGN"
+  | "INDUSTRIAL_DESIGN"
+  | "ARCHITECTURAL"
+  | "SOUND_CREATE"
+  | "SOUND_TECHNIQUE"
+  | "VOICE_ACTOR"
+  | "INTERNATIONAL_COMM"
+  | "OTHERS";
+
+type Body = {
+  name: string;
+  studentId: string;
+  enrollmentYear: number;
+  durationYears: number;
+  department: Department;
+  nickname?: string;
+  companyNames?: string[];
+  remarks?: string;
+  contactEmail?: string;
+  isPublic?: boolean;
+  acceptContact?: boolean;
+};
+
+type GraphQlResponse<T> = {
+  data?: T;
+  errors?: Array<{ message: string }>;
+};
+
+const updateInitialSettingsMutation = `
+  mutation UpdateInitialSettings($input: InitialSettingsInput!) {
+    updateInitialSettings(input: $input) {
+      id
+      name
+      role
+      status
+      studentId
+      enrollmentYear
+      durationYears
+      department
+    }
+  }
+`;
+
+const updateAlumniProfileMutation = `
+  mutation UpdateAlumniProfile($input: UpdateAlumniProfileInput!) {
+    updateAlumniProfile(input: $input) {
+      id
+      companyNames
+      isPublic
+      acceptContact
+    }
+  }
+`;
+
+async function executeGraphql<T>(serviceToken: string, query: string, variables: unknown) {
+  const endpoint = process.env.GRAPHQL_ENDPOINT ?? "http://localhost:4000/graphql";
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${serviceToken}`,
+    },
+    body: JSON.stringify({ query, variables }),
+    cache: "no-store",
+  });
+
+  return (await response.json()) as GraphQlResponse<T>;
+}
+
+export async function POST(request: Request) {
+  const session = await getServerSession(authOptions);
+  const serviceToken = session?.serviceToken;
+
+  if (!serviceToken) {
+    return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = (await request.json()) as Body;
+  if (
+    !body.name ||
+    !body.studentId ||
+    !body.enrollmentYear ||
+    !body.durationYears ||
+    !body.department
+  ) {
+    return NextResponse.json(
+      {
+        ok: false,
+        message: "name, studentId, enrollmentYear, durationYears, department are required",
+      },
+      { status: 400 },
+    );
+  }
+
+  const initialResult = await executeGraphql<{
+    updateInitialSettings: { id: string };
+  }>(serviceToken, updateInitialSettingsMutation, {
+    input: {
+      name: body.name,
+      studentId: body.studentId,
+      enrollmentYear: body.enrollmentYear,
+      durationYears: body.durationYears,
+      department: body.department,
+    },
+  });
+
+  if (initialResult.errors?.length || !initialResult.data?.updateInitialSettings) {
+    return NextResponse.json(
+      {
+        ok: false,
+        message:
+          initialResult.errors?.map((item) => item.message).join(", ") ||
+          "Initial settings update failed",
+      },
+      { status: 400 },
+    );
+  }
+
+  const companyNames = (body.companyNames ?? [])
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+
+  if (companyNames.length === 0) {
+    return NextResponse.json({
+      ok: true,
+      alumniUpdated: false,
+      message: "Initial settings saved. companyNames is required for alumni profile.",
+    });
+  }
+
+  const graduationYear = body.enrollmentYear + body.durationYears;
+
+  const alumniResult = await executeGraphql<{ updateAlumniProfile: { id: string } }>(
+    serviceToken,
+    updateAlumniProfileMutation,
+    {
+      input: {
+        nickname: body.nickname,
+        graduationYear,
+        department: body.department,
+        companyNames,
+        remarks: body.remarks,
+        contactEmail: body.contactEmail,
+        isPublic: body.isPublic,
+        acceptContact: body.acceptContact,
+      },
+    },
+  );
+
+  if (alumniResult.errors?.length || !alumniResult.data?.updateAlumniProfile) {
+    return NextResponse.json(
+      {
+        ok: false,
+        message:
+          alumniResult.errors?.map((item) => item.message).join(", ") ||
+          "Alumni profile update failed",
+      },
+      { status: 400 },
+    );
+  }
+
+  return NextResponse.json({ ok: true, alumniUpdated: true, message: "Profile updated" });
+}

@@ -1,13 +1,14 @@
 import {
   type CanActivate,
   type ExecutionContext,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
 import { GqlExecutionContext } from "@nestjs/graphql";
 import { Role, type User, UserStatus } from "@prisma/client";
 import { jwtVerify } from "jose";
-import type { PrismaService } from "../../prisma.service";
+import { PrismaService } from "../../prisma.service";
 
 type AuthPayload = {
   sub?: string;
@@ -18,7 +19,7 @@ type AuthPayload = {
 
 @Injectable()
 export class GqlAuthGuard implements CanActivate {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   private getSecret(): Uint8Array {
     const secret = process.env.AUTH_JWT_SECRET ?? process.env.NEXTAUTH_SECRET;

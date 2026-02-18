@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8f7f4;
+  --foreground: #1a1625;
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-bg-strong: rgba(255, 255, 255, 0.92);
+  --glass-border: rgba(120, 113, 140, 0.16);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 @theme inline {
@@ -14,13 +21,84 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0a0910;
+    --foreground: #e8e5f0;
   }
 }
 
 body {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo,
+    "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "palt";
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(900px ellipse at 0% -10%, rgba(139, 92, 246, 0.06), transparent 50%),
+    radial-gradient(700px ellipse at 100% 0%, rgba(251, 191, 36, 0.04), transparent 45%),
+    radial-gradient(800px ellipse at 40% 110%, rgba(244, 114, 182, 0.035), transparent 50%);
+}
+
+::selection {
+  background: rgba(139, 92, 246, 0.16);
+}
+
+.liquid-glass {
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.5), 0 1px 2px rgba(0, 0, 0, 0.03), 0 8px 24px
+    -8px rgba(0, 0, 0, 0.06);
+}
+
+.liquid-glass-strong {
+  border: 1px solid rgba(120, 113, 140, 0.2);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.6), 0 1px 3px rgba(0, 0, 0, 0.04), 0 12px 32px
+    -10px rgba(0, 0, 0, 0.08);
+}
+
+select option {
+  color: #1a1625;
+  background: #f8f7f4;
+}
+
+@media (prefers-color-scheme: dark) {
+  select option {
+    color: #e8e5f0;
+    background: #0a0910;
+  }
+
+  :root {
+    --glass-bg: rgba(10, 9, 16, 0.7);
+    --glass-bg-strong: rgba(10, 9, 16, 0.82);
+    --glass-border: rgba(80, 73, 110, 0.3);
+  }
+
+  body::before {
+    background: radial-gradient(700px ellipse at 0% 0%, rgba(139, 92, 246, 0.06), transparent 50%),
+      radial-gradient(600px ellipse at 100% 0%, rgba(99, 102, 241, 0.04), transparent 45%),
+      radial-gradient(600px ellipse at 50% 100%, rgba(124, 58, 237, 0.03), transparent 50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }

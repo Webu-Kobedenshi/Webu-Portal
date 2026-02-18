@@ -56,7 +56,7 @@ type AlumniProfile {
   nickname: String
   graduationYear: Int!
   department: Department!
-  companyName: String!
+  companyNames: [String!]!
   remarks: String
   contactEmail: String
   isPublic: Boolean!
@@ -76,7 +76,7 @@ input UpdateAlumniProfileInput {
   nickname: String
   graduationYear: Int!
   department: Department!
-  companyName: String!
+  companyNames: [String!]!
   remarks: String
   contactEmail: String
   isPublic: Boolean
@@ -84,6 +84,7 @@ input UpdateAlumniProfileInput {
 }
 
 input InitialSettingsInput {
+  name: String!
   studentId: String!
   enrollmentYear: Int!
   durationYears: Int!
@@ -91,7 +92,12 @@ input InitialSettingsInput {
 }
 
 extend type Query {
-  getAlumniList(department: Department, limit: Int!, offset: Int!): AlumniConnection!
+  getAlumniList(
+    department: Department
+    company: String
+    limit: Int!
+    offset: Int!
+  ): AlumniConnection!
   getMyProfile: User!
   getAlumniDetail(id: ID!): AlumniProfile
 }

@@ -111,7 +111,6 @@ async function main() {
           nickname: `OB${String(index + 1).padStart(3, "0")}`,
           graduationYear: 2020 + (index % 6),
           department,
-          companyName: `Seed Company ${String((index % 25) + 1).padStart(2, "0")}`,
           remarks:
             index % 5 === 0
               ? "在校生向けに就活アドバイス対応可"
@@ -121,6 +120,37 @@ async function main() {
           acceptContact: index % 4 !== 0,
         };
       }),
+    });
+
+    const profiles = await prisma.alumniProfile.findMany({
+      where: {
+        user: {
+          email: {
+            in: seedEmails,
+          },
+        },
+      },
+      select: {
+        id: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    await prisma.alumniCompany.createMany({
+      data: profiles.flatMap((profile, index) => {
+        const primaryCompany = `Seed Company ${String((index % 25) + 1).padStart(2, "0")}`;
+        const secondaryCompany = `Seed Offer ${String((index % 40) + 1).padStart(2, "0")}`;
+
+        return index % 3 === 0
+          ? [
+              { alumniProfileId: profile.id, companyName: primaryCompany },
+              { alumniProfileId: profile.id, companyName: secondaryCompany },
+            ]
+          : [{ alumniProfileId: profile.id, companyName: primaryCompany }];
+      }),
+      skipDuplicates: true,
     });
 
     console.log(`Seed completed: ${users.length} users + ${users.length} alumni profiles.`);

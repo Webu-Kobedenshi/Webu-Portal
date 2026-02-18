@@ -1,17 +1,17 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import type {
-  AlumniProfile,
   Prisma,
   Department as PrismaDepartment,
   Role as PrismaRole,
   UserStatus as PrismaUserStatus,
-  User,
 } from "@prisma/client";
-import type { PrismaService } from "../../../prisma.service";
+import { PrismaService } from "../../../prisma.service";
+import type { AlumniProfileDto, UserDto } from "../application/dto/alumni.dto";
 import type { Department } from "../domain/types/department";
 import type { UserRole, UserStatus } from "../domain/types/user";
 
 type InitialSettingsInput = {
+  name: string;
   studentId: string;
   enrollmentYear: number;
   durationYears: number;
@@ -20,11 +20,18 @@ type InitialSettingsInput = {
   status: UserStatus;
 };
 
+type UserRoleStatusSnapshot = {
+  role: UserRole;
+  status: UserStatus;
+  enrollmentYear: number | null;
+  durationYears: number | null;
+};
+
 type UpdateAlumniProfileInput = {
   nickname?: string;
   graduationYear: number;
   department: Department;
-  companyName: string;
+  companyNames: string[];
   remarks?: string;
   contactEmail?: string;
   isPublic: boolean;
@@ -32,42 +39,12 @@ type UpdateAlumniProfileInput = {
 };
 
 type AlumniConnection = {
-  items: AlumniProfile[];
+  items: AlumniProfileDto[];
   totalCount: number;
   hasNextPage: boolean;
 };
 
-const alumniProfileSelect = {
-  id: true,
-  userId: true,
-  nickname: true,
-  graduationYear: true,
-  department: true,
-  companyName: true,
-  remarks: true,
-  contactEmail: true,
-  isPublic: true,
-  acceptContact: true,
-  createdAt: true,
-  updatedAt: true,
-  user: {
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      studentId: true,
-      role: true,
-      status: true,
-      enrollmentYear: true,
-      durationYears: true,
-      department: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  },
-} satisfies Prisma.AlumniProfileSelect;
-
-const userSelect = {
+const userBaseSelect = {
   id: true,
   email: true,
   name: true,
@@ -79,14 +56,74 @@ const userSelect = {
   department: true,
   createdAt: true,
   updatedAt: true,
+} satisfies Prisma.UserSelect;
+
+const alumniProfileForUserSelect = {
+  id: true,
+  userId: true,
+  nickname: true,
+  graduationYear: true,
+  department: true,
+  companies: {
+    select: {
+      companyName: true,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  },
+  remarks: true,
+  contactEmail: true,
+  isPublic: true,
+  acceptContact: true,
+  createdAt: true,
+  updatedAt: true,
+  user: {
+    select: userBaseSelect,
+  },
+} satisfies Prisma.AlumniProfileSelect;
+
+const alumniProfileSelect = {
+  id: true,
+  userId: true,
+  nickname: true,
+  graduationYear: true,
+  department: true,
+  companies: {
+    select: {
+      companyName: true,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  },
+  remarks: true,
+  contactEmail: true,
+  isPublic: true,
+  acceptContact: true,
+  createdAt: true,
+  updatedAt: true,
+  user: {
+    select: userBaseSelect,
+  },
+} satisfies Prisma.AlumniProfileSelect;
+
+const userSelect = {
+  ...userBaseSelect,
   alumniProfile: {
-    select: alumniProfileSelect,
+    select: alumniProfileForUserSelect,
   },
 } satisfies Prisma.UserSelect;
 
+type AlumniProfileRecord = Prisma.AlumniProfileGetPayload<{ select: typeof alumniProfileSelect }>;
+type AlumniProfileForUserRecord = Prisma.AlumniProfileGetPayload<{
+  select: typeof alumniProfileForUserSelect;
+}>;
+type UserRecord = Prisma.UserGetPayload<{ select: typeof userSelect }>;
+
 @Injectable()
 export class AlumniRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   private toPrismaDepartment(value: Department): PrismaDepartment {
     return value as PrismaDepartment;
@@ -100,15 +137,79 @@ export class AlumniRepository {
     return value as PrismaUserStatus;
   }
 
+  private toUserDto(record: UserRecord): UserDto {
+    return {
+      ...record,
+      alumniProfile: record.alumniProfile
+        ? this.toAlumniProfileForUserDto(record.alumniProfile)
+        : null,
+    };
+  }
+
+  private toAlumniProfileForUserDto(record: AlumniProfileForUserRecord): AlumniProfileDto {
+    return {
+      id: record.id,
+      userId: record.userId,
+      nickname: record.nickname,
+      graduationYear: record.graduationYear,
+      department: record.department as Department,
+      companyNames: record.companies.map((item) => item.companyName),
+      remarks: record.remarks,
+      contactEmail: record.contactEmail,
+      isPublic: record.isPublic,
+      acceptContact: record.acceptContact,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+      user: {
+        ...record.user,
+        department: record.user.department as Department | null,
+      },
+    };
+  }
+
+  private toAlumniProfileDto(record: AlumniProfileRecord): AlumniProfileDto {
+    return {
+      id: record.id,
+      userId: record.userId,
+      nickname: record.nickname,
+      graduationYear: record.graduationYear,
+      department: record.department as Department,
+      companyNames: record.companies.map((item) => item.companyName),
+      remarks: record.remarks,
+      contactEmail: record.contactEmail,
+      isPublic: record.isPublic,
+      acceptContact: record.acceptContact,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+      user: {
+        ...record.user,
+        department: record.user.department as Department | null,
+      },
+    };
+  }
+
   async findPublicList(params: {
     department?: Department;
+    company?: string;
     limit: number;
     offset: number;
   }): Promise<AlumniConnection> {
-    const { department, limit, offset } = params;
+    const { department, company, limit, offset } = params;
     const where: Prisma.AlumniProfileWhereInput = {
       isPublic: true,
       ...(department ? { department: this.toPrismaDepartment(department) } : {}),
+      ...(company
+        ? {
+            companies: {
+              some: {
+                companyName: {
+                  contains: company,
+                  mode: "insensitive",
+                },
+              },
+            },
+          }
+        : {}),
     };
 
     const [items, totalCount] = await this.prisma.$transaction([
@@ -123,33 +224,63 @@ export class AlumniRepository {
     ]);
 
     return {
-      items,
+      items: items.map((item) => this.toAlumniProfileDto(item)),
       totalCount,
       hasNextPage: offset + items.length < totalCount,
     };
   }
 
-  findPublicById(id: string): Promise<AlumniProfile | null> {
-    return this.prisma.alumniProfile.findFirst({
+  async findPublicById(id: string): Promise<AlumniProfileDto | null> {
+    const record = await this.prisma.alumniProfile.findFirst({
       where: {
         id,
         isPublic: true,
       },
       select: alumniProfileSelect,
     });
+
+    return record ? this.toAlumniProfileDto(record) : null;
   }
 
-  findUserById(userId: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
+  async findUserById(userId: string): Promise<UserDto | null> {
+    const record = await this.prisma.user.findUnique({
       where: { id: userId },
       select: userSelect,
     });
+
+    return record ? this.toUserDto(record) : null;
   }
 
-  updateInitialSettings(userId: string, input: InitialSettingsInput): Promise<User> {
-    return this.prisma.user.update({
+  findUserRoleStatusSnapshot(userId: string): Promise<UserRoleStatusSnapshot | null> {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        role: true,
+        status: true,
+        enrollmentYear: true,
+        durationYears: true,
+      },
+    });
+  }
+
+  async updateRoleAndStatus(userId: string, role: UserRole, status: UserStatus): Promise<UserDto> {
+    const record = await this.prisma.user.update({
       where: { id: userId },
       data: {
+        role: this.toPrismaRole(role),
+        status: this.toPrismaUserStatus(status),
+      },
+      select: userSelect,
+    });
+
+    return this.toUserDto(record);
+  }
+
+  async updateInitialSettings(userId: string, input: InitialSettingsInput): Promise<UserDto> {
+    const record = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: input.name,
         studentId: input.studentId,
         enrollmentYear: input.enrollmentYear,
         durationYears: input.durationYears,
@@ -159,33 +290,70 @@ export class AlumniRepository {
       },
       select: userSelect,
     });
+
+    return this.toUserDto(record);
   }
 
-  upsertAlumniProfile(userId: string, input: UpdateAlumniProfileInput): Promise<AlumniProfile> {
-    return this.prisma.alumniProfile.upsert({
-      where: { userId },
-      create: {
-        userId,
-        nickname: input.nickname,
-        graduationYear: input.graduationYear,
-        department: this.toPrismaDepartment(input.department),
-        companyName: input.companyName,
-        remarks: input.remarks,
-        contactEmail: input.contactEmail,
-        isPublic: input.isPublic,
-        acceptContact: input.acceptContact,
-      },
-      update: {
-        nickname: input.nickname,
-        graduationYear: input.graduationYear,
-        department: this.toPrismaDepartment(input.department),
-        companyName: input.companyName,
-        remarks: input.remarks,
-        contactEmail: input.contactEmail,
-        isPublic: input.isPublic,
-        acceptContact: input.acceptContact,
-      },
+  async upsertAlumniProfile(
+    userId: string,
+    input: UpdateAlumniProfileInput,
+  ): Promise<AlumniProfileDto> {
+    const profileId = await this.prisma.$transaction(async (transaction) => {
+      const profile = await transaction.alumniProfile.upsert({
+        where: { userId },
+        create: {
+          userId,
+          nickname: input.nickname,
+          graduationYear: input.graduationYear,
+          department: this.toPrismaDepartment(input.department),
+          remarks: input.remarks,
+          contactEmail: input.contactEmail,
+          isPublic: input.isPublic,
+          acceptContact: input.acceptContact,
+        },
+        update: {
+          nickname: input.nickname,
+          graduationYear: input.graduationYear,
+          department: this.toPrismaDepartment(input.department),
+          remarks: input.remarks,
+          contactEmail: input.contactEmail,
+          isPublic: input.isPublic,
+          acceptContact: input.acceptContact,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      await transaction.alumniCompany.deleteMany({
+        where: {
+          alumniProfileId: profile.id,
+          companyName: {
+            notIn: input.companyNames,
+          },
+        },
+      });
+
+      await transaction.alumniCompany.createMany({
+        data: input.companyNames.map((companyName) => ({
+          alumniProfileId: profile.id,
+          companyName,
+        })),
+        skipDuplicates: true,
+      });
+
+      return profile.id;
+    });
+
+    const record = await this.prisma.alumniProfile.findUnique({
+      where: { id: profileId },
       select: alumniProfileSelect,
     });
+
+    if (!record) {
+      throw new Error("Failed to load updated alumni profile");
+    }
+
+    return this.toAlumniProfileDto(record);
   }
 }

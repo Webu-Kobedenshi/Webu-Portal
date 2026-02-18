@@ -10,6 +10,6 @@ export function calculateGraduationYear(enrollmentYear: number, durationYears: n
 
 export function isGraduatedAt(input: GraduationRuleInput): boolean {
   const currentYear = (input.now ?? new Date()).getFullYear();
-  const graduationYear = calculateGraduationYear(input.enrollmentYear, input.durationYears);
-  return currentYear >= graduationYear;
+  const thresholdYear = input.enrollmentYear + input.durationYears - 1;
+  return currentYear > thresholdYear;
 }

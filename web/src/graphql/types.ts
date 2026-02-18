@@ -22,13 +22,15 @@ export type Department =
   | "INTERNATIONAL_COMM"
   | "OTHERS";
 
+export type UserStatus = "ENROLLED" | "GRADUATED" | "WITHDRAWN";
+
 export type AlumniProfile = {
   id: string;
   userId: string;
   nickname: string | null;
   graduationYear: number;
   department: Department;
-  companyName: string;
+  companyNames: string[];
   remarks: string | null;
   contactEmail: string | null;
   isPublic: boolean;
@@ -41,4 +43,11 @@ export type AlumniConnection = {
   items: AlumniProfile[];
   totalCount: number;
   hasNextPage: boolean;
+};
+
+export type MyAccountProfile = {
+  id: string;
+  name: string;
+  email: string;
+  role: "STUDENT" | "ALUMNI" | "ADMIN";
 };

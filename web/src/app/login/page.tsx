@@ -7,6 +7,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
   const error = searchParams.get("error");
+  const accountDeleted = searchParams.get("accountDeleted");
 
   const errorMessage =
     error === "OAuthSignin"
@@ -26,6 +27,12 @@ export default function LoginPage() {
         {errorMessage ? (
           <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
             {errorMessage}
+          </p>
+        ) : null}
+
+        {accountDeleted ? (
+          <p className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
+            アカウントを削除しました。
           </p>
         ) : null}
 

@@ -1,35 +1,44 @@
+import { Badge } from "@/components/atoms/badge";
 import { SearchField } from "@/components/molecules/search-field";
+import { AccountBadge } from "@/components/organisms/account-badge";
 import { AlumniCard } from "@/components/organisms/alumni-card";
-import type { AlumniProfile } from "@/graphql/types";
+import type { AlumniProfile, MyAccountProfile } from "@/graphql/types";
 import Link from "next/link";
 
 type AlumniListTemplateProps = {
   alumni: AlumniProfile[];
   initialDepartment: string;
+  initialCompany: string;
   totalCount: number;
   currentPage: number;
   pageSize: number;
   hasNextPage: boolean;
+  account: MyAccountProfile;
   error?: string;
 };
 
 export function AlumniListTemplate({
   alumni,
   initialDepartment,
+  initialCompany,
   totalCount,
   currentPage,
   pageSize,
   hasNextPage,
+  account,
   error,
 }: AlumniListTemplateProps) {
   const hasPrevPage = currentPage > 1;
-  const start = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const end = totalCount === 0 ? 0 : Math.min(start + alumni.length - 1, totalCount);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const currentShownCount = alumni.length;
 
   const buildPageHref = (page: number) => {
     const query = new URLSearchParams();
     if (initialDepartment) {
       query.set("department", initialDepartment);
+    }
+    if (initialCompany) {
+      query.set("company", initialCompany);
     }
     if (pageSize !== 20) {
       query.set("pageSize", String(pageSize));
@@ -43,69 +52,116 @@ export function AlumniListTemplate({
   };
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-5xl p-6 md:p-10">
-      <header>
-        <h1 className="text-2xl font-semibold md:text-3xl">神戸電子 OB/OG ポータル</h1>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          学科で絞り込み、卒業生情報を閲覧できます。
-        </p>
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">該当件数: {totalCount}件</p>
+    <main className="mx-auto min-h-screen w-full max-w-[1400px] px-4 py-6 md:px-8 md:py-8">
+      <header className="liquid-glass-strong rounded-2xl p-5 md:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="mb-2 flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500" />
+              <p className="text-[11px] font-semibold tracking-[0.12em] text-violet-600 dark:text-violet-400">
+                We部運営
+              </p>
+            </div>
+            <h1 className="text-xl font-bold tracking-tight text-stone-900 md:text-2xl dark:text-stone-100">
+              神戸電子 OB/OG ポータル
+            </h1>
+            <p className="mt-1 text-[13px] text-stone-500 dark:text-stone-400">
+              先輩たちの就職実績を検索できます
+            </p>
+          </div>
+          <div className="hidden lg:block">
+            <AccountBadge account={account} />
+          </div>
+        </div>
       </header>
 
-      <section className="mt-6">
-        <SearchField initialDepartment={initialDepartment} initialPageSize={pageSize} />
+      <section className="mt-4">
+        <SearchField
+          initialDepartment={initialDepartment}
+          initialCompany={initialCompany}
+          initialPageSize={pageSize}
+        />
+      </section>
+
+      <section className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-1.5 text-[13px] font-medium text-stone-600 dark:text-stone-400">
+          <span className="tabular-nums font-semibold text-stone-900 dark:text-stone-200">
+            {totalCount}
+          </span>
+          <span>件中</span>
+          <span className="tabular-nums font-semibold text-stone-900 dark:text-stone-200">
+            {currentShownCount}
+          </span>
+          <span>件表示</span>
+        </div>
+        <div className="h-3.5 w-px bg-stone-200 dark:bg-stone-700" />
+        {initialDepartment ? (
+          <Badge variant="default">学科で絞り込み中</Badge>
+        ) : (
+          <Badge variant="secondary">全学科</Badge>
+        )}
+        {initialCompany ? <Badge variant="default">企業: {initialCompany}</Badge> : null}
       </section>
 
       {error ? (
-        <section className="mt-6 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+        <section className="mt-4 rounded-xl border border-rose-200/80 bg-rose-50/80 p-4 text-[13px] font-medium text-rose-700 backdrop-blur dark:border-rose-800/50 dark:bg-rose-950/30 dark:text-rose-300">
           {error}
         </section>
       ) : null}
 
-      <section className="mt-6 grid gap-4 md:grid-cols-2">
+      <section className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {alumni.length > 0 ? (
           alumni.map((item) => <AlumniCard key={item.id} alumni={item} />)
         ) : (
-          <p className="rounded-lg border border-dashed border-zinc-300 p-5 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
-            条件に一致するOB/OGが見つかりませんでした。
-          </p>
+          <div className="col-span-full flex flex-col items-center justify-center rounded-2xl border border-dashed border-stone-300/80 py-16 dark:border-stone-700/60">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-stone-100 dark:bg-stone-800" />
+            <p className="mt-4 text-[13px] font-medium text-stone-600 dark:text-stone-400">
+              条件に一致するOB/OGが見つかりませんでした
+            </p>
+            <p className="mt-1 text-[12px] text-stone-400 dark:text-stone-500">
+              学科フィルタを解除するか、検索条件を変えてお試しください
+            </p>
+          </div>
         )}
       </section>
 
-      <section className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-zinc-200 pt-4 text-sm text-zinc-600 md:flex-row dark:border-zinc-800 dark:text-zinc-300">
-        <p>
-          {start}〜{end} / 全{totalCount}件
-        </p>
-        <div className="flex items-center gap-2">
+      {totalCount > 0 && (
+        <section className="mt-8 flex items-center justify-center gap-1.5">
           {hasPrevPage ? (
             <Link
               href={buildPageHref(currentPage - 1)}
-              className="inline-flex h-9 items-center justify-center rounded-md border border-zinc-300 px-3 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200/80 bg-white/80 text-stone-600 transition-all hover:bg-stone-50 hover:text-stone-900 active:scale-95 dark:border-stone-700/60 dark:bg-stone-900/60 dark:text-stone-400 dark:hover:bg-stone-800/80 dark:hover:text-stone-200"
+              aria-label="前のページ"
             >
-              前へ
+              <span>‹</span>
             </Link>
           ) : (
-            <span className="inline-flex h-9 cursor-not-allowed items-center justify-center rounded-md border border-zinc-200 px-3 text-zinc-400 dark:border-zinc-800 dark:text-zinc-600">
-              前へ
+            <span className="inline-flex h-9 w-9 cursor-not-allowed items-center justify-center rounded-xl border border-stone-200/50 text-stone-300 dark:border-stone-800/50 dark:text-stone-700">
+              ‹
             </span>
           )}
 
-          <span className="px-2 text-zinc-500 dark:text-zinc-400">{currentPage}ページ</span>
+          <span className="px-3 text-[13px] tabular-nums text-stone-600 dark:text-stone-400">
+            <span className="font-semibold text-stone-900 dark:text-stone-200">{currentPage}</span>
+            <span className="mx-1 text-stone-300 dark:text-stone-600">/</span>
+            <span>{totalPages}</span>
+          </span>
 
           {hasNextPage ? (
             <Link
               href={buildPageHref(currentPage + 1)}
-              className="inline-flex h-9 items-center justify-center rounded-md border border-zinc-300 px-3 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200/80 bg-white/80 text-stone-600 transition-all hover:bg-stone-50 hover:text-stone-900 active:scale-95 dark:border-stone-700/60 dark:bg-stone-900/60 dark:text-stone-400 dark:hover:bg-stone-800/80 dark:hover:text-stone-200"
+              aria-label="次のページ"
             >
-              次へ
+              <span>›</span>
             </Link>
           ) : (
-            <span className="inline-flex h-9 cursor-not-allowed items-center justify-center rounded-md border border-zinc-200 px-3 text-zinc-400 dark:border-zinc-800 dark:text-zinc-600">
-              次へ
+            <span className="inline-flex h-9 w-9 cursor-not-allowed items-center justify-center rounded-xl border border-stone-200/50 text-stone-300 dark:border-stone-800/50 dark:text-stone-700">
+              ›
             </span>
           )}
-        </div>
-      </section>
+        </section>
+      )}
     </main>
   );
 }

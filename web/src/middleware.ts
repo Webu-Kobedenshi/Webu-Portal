@@ -7,5 +7,5 @@ export default withAuth({
 });
 
 export const config = {
-  matcher: ["/", "/alumni/:path*"],
+  matcher: ["/", "/alumni/:path*", "/account", "/initial-setup"],
 };

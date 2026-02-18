@@ -22,7 +22,7 @@ export type AlumniProfileDto = {
   nickname: string | null;
   graduationYear: number;
   department: Department;
-  companyName: string;
+  companyNames: string[];
   remarks: string | null;
   contactEmail: string | null;
   isPublic: boolean;

@@ -98,7 +98,7 @@ model AlumniProfile {
   nickname       String?
   graduationYear Int
   department     Department // 検索効率化のためこちらにも保持
-  companyName    String
+  companies      AlumniCompany[]
 
   remarks      String? @db.Text
   contactEmail String?
@@ -111,7 +111,18 @@ model AlumniProfile {
 
   // ページネーションと検索のためのインデックス
   @@index([department, createdAt(sort: Desc)])
+}
+
+model AlumniCompany {
+  id              String       @id @default(cuid())
+  alumniProfileId String
+  alumniProfile   AlumniProfile @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
+  companyName     String
+  createdAt       DateTime     @default(now())
+
+  @@unique([alumniProfileId, companyName])
   @@index([companyName])
+  @@index([alumniProfileId, createdAt(sort: Desc)])
 }
 
 // ------------------------------------------------------
