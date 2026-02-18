@@ -1,7 +1,7 @@
-import type { Alumni, Department } from "./types";
+import type { AlumniConnection, AlumniProfile, Department } from "./types";
 
 type AlumniListData = {
-  alumniList: Alumni[];
+  getAlumniList: AlumniConnection;
 };
 
 type GraphQlResponse<TData> = {
@@ -10,25 +10,36 @@ type GraphQlResponse<TData> = {
 };
 
 const alumniListQuery = `
-  query AlumniList($search: String, $department: Department) {
-    alumniList(search: $search, department: $department) {
-      id
-      name
-      graduationYear
-      department
-      company
-      message
-      contactEmail
-      isContactable
-      isPublic
-      createdAt
-      updatedAt
+  query GetAlumniList($department: Department, $limit: Int!, $offset: Int!) {
+    getAlumniList(department: $department, limit: $limit, offset: $offset) {
+      items {
+        id
+        userId
+        nickname
+        graduationYear
+        department
+        companyName
+        remarks
+        contactEmail
+        isPublic
+        acceptContact
+        createdAt
+        updatedAt
+      }
+      totalCount
+      hasNextPage
     }
   }
 `;
 
-export async function fetchAlumniList(params: { search?: string; department?: string }) {
+export async function fetchAlumniList(params: {
+  department?: string;
+  limit?: number;
+  offset?: number;
+}) {
   const endpoint = process.env.GRAPHQL_ENDPOINT ?? "http://localhost:4000/graphql";
+  const limit = params.limit ?? 20;
+  const offset = params.offset ?? 0;
 
   try {
     const response = await fetch(endpoint, {
@@ -40,8 +51,9 @@ export async function fetchAlumniList(params: { search?: string; department?: st
       body: JSON.stringify({
         query: alumniListQuery,
         variables: {
-          search: params.search,
           department: params.department as Department | undefined,
+          limit,
+          offset,
         },
       }),
     });
@@ -50,18 +62,24 @@ export async function fetchAlumniList(params: { search?: string; department?: st
 
     if (json.errors?.length) {
       return {
-        alumniList: [] satisfies Alumni[],
+        alumniList: [] satisfies AlumniProfile[],
+        totalCount: 0,
+        hasNextPage: false,
         error: json.errors.map((item) => item.message).join(", "),
       };
     }
 
     return {
-      alumniList: json.data?.alumniList ?? [],
+      alumniList: json.data?.getAlumniList.items ?? [],
+      totalCount: json.data?.getAlumniList.totalCount ?? 0,
+      hasNextPage: json.data?.getAlumniList.hasNextPage ?? false,
       error: "",
     };
   } catch (error) {
     return {
-      alumniList: [] satisfies Alumni[],
+      alumniList: [] satisfies AlumniProfile[],
+      totalCount: 0,
+      hasNextPage: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }

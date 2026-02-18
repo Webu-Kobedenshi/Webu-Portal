@@ -1,15 +1,20 @@
-query AlumniList($search: String, $department: Department) {
-  alumniList(search: $search, department: $department) {
-    id
-    name
-    graduationYear
-    department
-    company
-    message
-    contactEmail
-    isContactable
-    isPublic
-    createdAt
-    updatedAt
+query GetAlumniList($department: Department, $limit: Int!, $offset: Int!) {
+  getAlumniList(department: $department, limit: $limit, offset: $offset) {
+    items {
+      id
+      userId
+      nickname
+      graduationYear
+      department
+      companyName
+      remarks
+      contactEmail
+      isPublic
+      acceptContact
+      createdAt
+      updatedAt
+    }
+    totalCount
+    hasNextPage
   }
 }
