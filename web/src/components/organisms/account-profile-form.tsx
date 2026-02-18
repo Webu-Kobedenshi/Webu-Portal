@@ -99,7 +99,8 @@ export function AccountProfileForm({
   description = "初期設定で入力した項目を更新できます。公開する内定先情報もここで管理します。",
   showPublicProfileFields = true,
 }: AccountProfileFormProps) {
-  const initialCompanyNames = initialProfile?.alumniProfile?.companyNames?.length
+  const initialCompanyNames = initialProfile?.alumniProfile?.companyNames
+    ?.length
     ? [...initialProfile.alumniProfile.companyNames]
     : [""];
 
@@ -107,15 +108,20 @@ export function AccountProfileForm({
     ...defaultState,
     name: initialProfile?.name ?? initialName ?? "",
     studentId: initialProfile?.studentId ?? "",
-    enrollmentYear: initialProfile?.enrollmentYear ? String(initialProfile.enrollmentYear) : "",
+    enrollmentYear: initialProfile?.enrollmentYear
+      ? String(initialProfile.enrollmentYear)
+      : "",
     durationYears: initialProfile?.durationYears
-      ? (String(initialProfile.durationYears) as AccountProfileFormState["durationYears"])
+      ? (String(
+          initialProfile.durationYears,
+        ) as AccountProfileFormState["durationYears"])
       : "",
     department: initialProfile?.department ?? "",
     nickname: initialProfile?.alumniProfile?.nickname ?? initialName ?? "",
     companyNames: initialCompanyNames,
     remarks: initialProfile?.alumniProfile?.remarks ?? "",
-    contactEmail: initialProfile?.alumniProfile?.contactEmail ?? initialEmail ?? "",
+    contactEmail:
+      initialProfile?.alumniProfile?.contactEmail ?? initialEmail ?? "",
     isPublic: initialProfile?.alumniProfile?.isPublic ?? true,
     acceptContact: initialProfile?.alumniProfile?.acceptContact ?? false,
   });
@@ -180,7 +186,9 @@ export function AccountProfileForm({
 
       return {
         ...prev,
-        companyNames: prev.companyNames.filter((_, itemIndex) => itemIndex !== index),
+        companyNames: prev.companyNames.filter(
+          (_, itemIndex) => itemIndex !== index,
+        ),
       };
     });
   };
@@ -196,7 +204,11 @@ export function AccountProfileForm({
     }
 
     const normalizedCompanyNames = Array.from(
-      new Set(state.companyNames.map((item) => item.trim()).filter((item) => item.length > 0)),
+      new Set(
+        state.companyNames
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0),
+      ),
     );
 
     setIsSaving(true);
@@ -240,7 +252,11 @@ export function AccountProfileForm({
         setMessage("保存しました。初期情報を更新しました。");
       }
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "更新に失敗しました");
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "更新に失敗しました",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -248,8 +264,12 @@ export function AccountProfileForm({
 
   return (
     <section className="mt-6 rounded-2xl border border-stone-200/80 bg-white/70 p-5 dark:border-stone-700/60 dark:bg-stone-900/40">
-      <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">{title}</h2>
-      <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">{description}</p>
+      <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
+        {title}
+      </h2>
+      <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+        {description}
+      </p>
 
       <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
         <div>
@@ -290,7 +310,9 @@ export function AccountProfileForm({
               <Input
                 id="profile-enrollment-year"
                 value={state.enrollmentYear}
-                onChange={(event) => setField("enrollmentYear", event.target.value)}
+                onChange={(event) =>
+                  setField("enrollmentYear", event.target.value)
+                }
                 placeholder="例: 2024"
                 inputMode="numeric"
                 required
@@ -309,7 +331,8 @@ export function AccountProfileForm({
                 onChange={(event) =>
                   setField(
                     "durationYears",
-                    event.target.value as AccountProfileFormState["durationYears"],
+                    event.target
+                      .value as AccountProfileFormState["durationYears"],
                   )
                 }
                 required
@@ -374,7 +397,9 @@ export function AccountProfileForm({
                 <Input
                   id="profile-contact-email"
                   value={state.contactEmail}
-                  onChange={(event) => setField("contactEmail", event.target.value)}
+                  onChange={(event) =>
+                    setField("contactEmail", event.target.value)
+                  }
                   placeholder="example@st.kobedenshi.ac.jp"
                   type="email"
                   disabled={!canEditAlumniProfile}
@@ -387,17 +412,24 @@ export function AccountProfileForm({
                 内定先・勤務先（複数可）
               </span>
               {state.companyNames.map((companyName, index) => (
-                <div key={companyRowIds[index]} className="flex items-center gap-2">
+                <div
+                  key={companyRowIds[index]}
+                  className="flex items-center gap-2"
+                >
                   <Input
                     value={companyName}
-                    onChange={(event) => setCompanyNameAt(index, event.target.value)}
+                    onChange={(event) =>
+                      setCompanyNameAt(index, event.target.value)
+                    }
                     placeholder="例: 株式会社○○"
                     disabled={!canEditAlumniProfile}
                   />
                   <Button
                     type="button"
                     onClick={() => removeCompanyNameField(index)}
-                    disabled={!canEditAlumniProfile || state.companyNames.length === 1}
+                    disabled={
+                      !canEditAlumniProfile || state.companyNames.length === 1
+                    }
                     className="h-10 shrink-0 !bg-gradient-to-r !from-rose-600 !to-pink-600 px-3 text-xs text-white hover:!from-rose-500 hover:!to-pink-500"
                   >
                     削除
@@ -420,7 +452,9 @@ export function AccountProfileForm({
                   <input
                     type="checkbox"
                     checked={state.isPublic}
-                    onChange={(event) => setField("isPublic", event.target.checked)}
+                    onChange={(event) =>
+                      setField("isPublic", event.target.checked)
+                    }
                     disabled={!canEditAlumniProfile}
                   />
                   内定先情報を公開する
@@ -430,7 +464,9 @@ export function AccountProfileForm({
                   <input
                     type="checkbox"
                     checked={state.acceptContact}
-                    onChange={(event) => setField("acceptContact", event.target.checked)}
+                    onChange={(event) =>
+                      setField("acceptContact", event.target.checked)
+                    }
                     disabled={!canEditAlumniProfile}
                   />
                   連絡先の公開を許可する

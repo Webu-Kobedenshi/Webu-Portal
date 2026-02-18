@@ -20,7 +20,11 @@ export function SearchField({
           <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
             学科で絞り込む
           </span>
-          <Select id="search-department" name="department" defaultValue={initialDepartment || ""}>
+          <Select
+            id="search-department"
+            name="department"
+            defaultValue={initialDepartment || ""}
+          >
             <option value="">すべての学科</option>
             <option value="IT_EXPERT">ITエキスパート</option>
             <option value="IT_SPECIALIST">ITスペシャリスト</option>
@@ -63,7 +67,11 @@ export function SearchField({
           <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
             表示件数
           </span>
-          <Select id="search-page-size" name="pageSize" defaultValue={String(initialPageSize)}>
+          <Select
+            id="search-page-size"
+            name="pageSize"
+            defaultValue={String(initialPageSize)}
+          >
             <option value="10">10件</option>
             <option value="20">20件</option>
             <option value="50">50件</option>
