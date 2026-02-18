@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { GqlAuthGuard } from "../../common/auth/gql-auth.guard";
 import { PrismaService } from "../../prisma.service";
 import { AlumniCommandService } from "./application/commands/alumni-command.service";
 import { AlumniQueryService } from "./application/queries/alumni-query.service";
@@ -11,6 +12,7 @@ import { AlumniResolver } from "./presentation/alumni.resolver";
     AlumniRepository,
     AlumniQueryService,
     AlumniCommandService,
+    GqlAuthGuard,
     AlumniResolver,
   ],
 })

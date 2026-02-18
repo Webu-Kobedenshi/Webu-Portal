@@ -6,17 +6,13 @@ type PageProps = {
 };
 
 export default async function Home({ searchParams }: PageProps) {
-  const params: Record<string, string | string[] | undefined> =
-    (await searchParams) ?? {};
+  const params: Record<string, string | string[] | undefined> = (await searchParams) ?? {};
   const q = params.q;
   const departmentParam = params.department;
 
   const keyword = (Array.isArray(q) ? q[0] : q)?.trim() ?? "";
   const department =
-    (Array.isArray(departmentParam)
-      ? departmentParam[0]
-      : departmentParam
-    )?.trim() ?? "";
+    (Array.isArray(departmentParam) ? departmentParam[0] : departmentParam)?.trim() ?? "";
 
   const { alumniList, error } = await fetchAlumniList({
     search: keyword || undefined,

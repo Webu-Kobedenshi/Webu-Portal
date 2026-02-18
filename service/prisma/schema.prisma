@@ -1,43 +1,145 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// ------------------------------------------------------
+// 1. Data Source & Generator
+// ------------------------------------------------------
+datasource db {
+  provider = "postgresql"
+}
 
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "postgresql"
+// ------------------------------------------------------
+// 2. Enums
+// ------------------------------------------------------
+
+enum Role {
+  STUDENT
+  ALUMNI
+  ADMIN
+}
+
+enum UserStatus {
+  ENROLLED  // 在学中
+  GRADUATED // 卒業
+  WITHDRAWN // 退学・休学
 }
 
 enum Department {
-  GAME
-  IT
-  DESIGN
-  CG
-  SOUND
-  OTHER
+  // IT・AI系
+  IT_EXPERT           // ITエキスパート学科 (4年)
+  IT_SPECIALIST       // ITスペシャリスト学科 (3年)
+  INFORMATION_PROCESS // 情報処理学科 (2年)
+  PROGRAMMING         // プログラミング学科 (2年)
+  AI_SYSTEM           // AIシステム開発学科 (2年)
+  ADVANCED_STUDIES    // 総合研究科 (1年)
+  INFO_BUSINESS       // 情報ビジネス学科
+  INFO_ENGINEERING    // 情報工学科
+
+  // ゲーム・eスポーツ系
+  GAME_RESEARCH // ゲーム開発研究学科 (4年)
+  GAME_ENGINEER // ゲームエンジニア学科 (3年)
+  GAME_SOFTWARE // ゲーム制作学科 (2年)
+  ESPORTS       // esportsエンジニア学科
+
+  // デザイン・クリエイティブ系
+  CG_ANIMATION
+  DIGITAL_ANIME
+  GRAPHIC_DESIGN
+  INDUSTRIAL_DESIGN
+  ARCHITECTURAL
+
+  // エンタメ・音楽系
+  SOUND_CREATE
+  SOUND_TECHNIQUE
+  VOICE_ACTOR
+
+  // その他
+  INTERNATIONAL_COMM
+  OTHERS
 }
+
+// ------------------------------------------------------
+// 3. User Models
+// ------------------------------------------------------
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String  @id @default(cuid())
+  email     String  @unique
+  name      String?
+  studentId String? @unique
+
+  role   Role       @default(STUDENT)
+  status UserStatus @default(ENROLLED)
+
+  // 卒業判定用
+  enrollmentYear Int?
+  durationYears  Int?
+  department     Department?
+
+  alumniProfile AlumniProfile?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  accounts Account[]
+  sessions Session[]
 }
 
-model Alumni {
-  id            String     @id @default(cuid())
-  name          String
+// ------------------------------------------------------
+// 4. Alumni Models (Pagination Indexing Included)
+// ------------------------------------------------------
+
+model AlumniProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  nickname       String?
   graduationYear Int
-  department    Department
-  company       String
-  message       String?
-  contactEmail  String?
-  isContactable Boolean    @default(false)
-  isPublic      Boolean    @default(true)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  department     Department // 検索効率化のためこちらにも保持
+  companyName    String
+
+  remarks      String? @db.Text
+  contactEmail String?
+
+  isPublic      Boolean @default(true)
+  acceptContact Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ページネーションと検索のためのインデックス
+  @@index([department, createdAt(sort: Desc)])
+  @@index([companyName])
+}
+
+// ------------------------------------------------------
+// 5. Auth.js Models
+// ------------------------------------------------------
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -1,54 +1,102 @@
 enum Department {
-  GAME
-  IT
-  DESIGN
-  CG
-  SOUND
-  OTHER
+  IT_EXPERT
+  IT_SPECIALIST
+  INFORMATION_PROCESS
+  PROGRAMMING
+  AI_SYSTEM
+  ADVANCED_STUDIES
+  INFO_BUSINESS
+  INFO_ENGINEERING
+  GAME_RESEARCH
+  GAME_ENGINEER
+  GAME_SOFTWARE
+  ESPORTS
+  CG_ANIMATION
+  DIGITAL_ANIME
+  GRAPHIC_DESIGN
+  INDUSTRIAL_DESIGN
+  ARCHITECTURAL
+  SOUND_CREATE
+  SOUND_TECHNIQUE
+  VOICE_ACTOR
+  INTERNATIONAL_COMM
+  OTHERS
 }
 
-type Alumni {
+enum Role {
+  STUDENT
+  ALUMNI
+  ADMIN
+}
+
+enum UserStatus {
+  ENROLLED
+  GRADUATED
+  WITHDRAWN
+}
+
+type User {
   id: ID!
-  name: String!
-  graduationYear: Int!
-  department: Department!
-  company: String!
-  message: String
-  contactEmail: String
-  isContactable: Boolean!
-  isPublic: Boolean!
+  email: String!
+  name: String
+  studentId: String
+  role: Role!
+  status: UserStatus!
+  enrollmentYear: Int
+  durationYears: Int
+  department: Department
+  alumniProfile: AlumniProfile
   createdAt: String!
   updatedAt: String!
 }
 
-input CreateAlumniInput {
-  name: String!
+type AlumniProfile {
+  id: ID!
+  userId: String!
+  nickname: String
   graduationYear: Int!
   department: Department!
-  company: String!
-  message: String
+  companyName: String!
+  remarks: String
   contactEmail: String
-  isContactable: Boolean
-  isPublic: Boolean
+  isPublic: Boolean!
+  acceptContact: Boolean!
+  user: User!
+  createdAt: String!
+  updatedAt: String!
 }
 
-input UpdateAlumniInput {
-  name: String
-  graduationYear: Int
-  department: Department
-  company: String
-  message: String
+type AlumniConnection {
+  items: [AlumniProfile!]!
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
+input UpdateAlumniProfileInput {
+  nickname: String
+  graduationYear: Int!
+  department: Department!
+  companyName: String!
+  remarks: String
   contactEmail: String
-  isContactable: Boolean
   isPublic: Boolean
+  acceptContact: Boolean
+}
+
+input InitialSettingsInput {
+  studentId: String!
+  enrollmentYear: Int!
+  durationYears: Int!
+  department: Department!
 }
 
 extend type Query {
-  alumniList(search: String, department: Department): [Alumni!]!
-  alumniById(id: ID!): Alumni
+  getAlumniList(department: Department, limit: Int!, offset: Int!): AlumniConnection!
+  getMyProfile: User!
+  getAlumniDetail(id: ID!): AlumniProfile
 }
 
 extend type Mutation {
-  createAlumni(input: CreateAlumniInput!): Alumni!
-  updateAlumni(id: ID!, input: UpdateAlumniInput!): Alumni!
+  updateInitialSettings(input: InitialSettingsInput!): User!
+  updateAlumniProfile(input: UpdateAlumniProfileInput!): AlumniProfile!
 }

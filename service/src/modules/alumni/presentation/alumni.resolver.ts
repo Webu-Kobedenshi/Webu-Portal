@@ -1,48 +1,81 @@
+import { NotFoundException, UseGuards } from "@nestjs/common";
 import { Args, Mutation, Query, Resolver } from "@nestjs/graphql";
-import type { Alumni, Department } from "@prisma/client";
+import { CurrentUserId } from "../../../common/auth/current-user-id.decorator";
+import { GqlAuthGuard } from "../../../common/auth/gql-auth.guard";
 import type { AlumniCommandService } from "../application/commands/alumni-command.service";
+import type { AlumniConnectionDto, AlumniProfileDto, UserDto } from "../application/dto/alumni.dto";
 import type { AlumniQueryService } from "../application/queries/alumni-query.service";
+import type { Department } from "../domain/types/department";
 
-type CreateAlumniInput = {
-  name: string;
-  graduationYear: number;
+type InitialSettingsInput = {
+  studentId: string;
+  enrollmentYear: number;
+  durationYears: number;
   department: Department;
-  company: string;
-  message?: string;
-  contactEmail?: string;
-  isContactable?: boolean;
-  isPublic?: boolean;
 };
 
-type UpdateAlumniInput = Partial<CreateAlumniInput>;
+type UpdateAlumniProfileInput = {
+  nickname?: string;
+  graduationYear: number;
+  department: Department;
+  companyName: string;
+  remarks?: string;
+  contactEmail?: string;
+  isPublic?: boolean;
+  acceptContact?: boolean;
+};
 
-@Resolver("Alumni")
+@Resolver()
 export class AlumniResolver {
   constructor(
     private readonly alumniQueryService: AlumniQueryService,
     private readonly alumniCommandService: AlumniCommandService,
   ) {}
 
-  @Query("alumniList")
-  alumniList(
-    @Args("search", { nullable: true }) search?: string,
+  @Query("getAlumniList")
+  getAlumniList(
     @Args("department", { nullable: true }) department?: Department,
-  ): Promise<Alumni[]> {
-    return this.alumniQueryService.list({ search, department });
+    @Args("limit") limit?: number,
+    @Args("offset") offset?: number,
+  ): Promise<AlumniConnectionDto> {
+    return this.alumniQueryService.getAlumniList({
+      department,
+      limit: limit ?? 20,
+      offset: offset ?? 0,
+    });
   }
 
-  @Query("alumniById")
-  alumniById(@Args("id") id: string): Promise<Alumni | null> {
-    return this.alumniQueryService.getById(id);
+  @Query("getAlumniDetail")
+  getAlumniDetail(@Args("id") id: string): Promise<AlumniProfileDto | null> {
+    return this.alumniQueryService.getAlumniDetail(id);
   }
 
-  @Mutation("createAlumni")
-  createAlumni(@Args("input") input: CreateAlumniInput): Promise<Alumni> {
-    return this.alumniCommandService.create(input);
+  @UseGuards(GqlAuthGuard)
+  @Query("getMyProfile")
+  async getMyProfile(@CurrentUserId() userId: string): Promise<UserDto> {
+    const user = await this.alumniQueryService.getMyProfile(userId);
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+
+    return user;
   }
 
-  @Mutation("updateAlumni")
-  updateAlumni(@Args("id") id: string, @Args("input") input: UpdateAlumniInput): Promise<Alumni> {
-    return this.alumniCommandService.update(id, input);
+  @UseGuards(GqlAuthGuard)
+  @Mutation("updateInitialSettings")
+  updateInitialSettings(
+    @CurrentUserId() userId: string,
+    @Args("input") input: InitialSettingsInput,
+  ): Promise<UserDto> {
+    return this.alumniCommandService.updateInitialSettings(userId, input);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Mutation("updateAlumniProfile")
+  updateAlumniProfile(
+    @CurrentUserId() userId: string,
+    @Args("input") input: UpdateAlumniProfileInput,
+  ): Promise<AlumniProfileDto> {
+    return this.alumniCommandService.updateAlumniProfile(userId, input);
   }
 }
