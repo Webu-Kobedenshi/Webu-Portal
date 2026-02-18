@@ -63,10 +63,10 @@ export function AlumniListTemplate({
               </p>
             </div>
             <h1 className="text-xl font-bold tracking-tight text-stone-900 md:text-2xl dark:text-stone-100">
-              神戸電子 OB/OG ポータル
+              神戸電子専門学校 OB/OG一覧
             </h1>
             <p className="mt-1 text-[13px] text-stone-500 dark:text-stone-400">
-              先輩たちの就職実績を検索できます
+              あの企業に就職した先輩に話が聞けるかも！？
             </p>
           </div>
           <div className="hidden lg:block">
@@ -88,11 +88,7 @@ export function AlumniListTemplate({
           <span className="tabular-nums font-semibold text-stone-900 dark:text-stone-200">
             {totalCount}
           </span>
-          <span>件中</span>
-          <span className="tabular-nums font-semibold text-stone-900 dark:text-stone-200">
-            {currentShownCount}
-          </span>
-          <span>件表示</span>
+          <span>件</span>
         </div>
         <div className="h-3.5 w-px bg-stone-200 dark:bg-stone-700" />
         {initialDepartment ? (

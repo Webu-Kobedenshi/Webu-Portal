@@ -30,6 +30,121 @@ const departments: Department[] = [
   Department.OTHERS,
 ];
 
+const familyNames = [
+  "佐藤",
+  "鈴木",
+  "高橋",
+  "田中",
+  "伊藤",
+  "渡辺",
+  "山本",
+  "中村",
+  "小林",
+  "加藤",
+  "吉田",
+  "山田",
+  "佐々木",
+  "山口",
+  "松本",
+  "井上",
+  "木村",
+  "林",
+  "清水",
+  "斎藤",
+] as const;
+
+const givenNames = [
+  "陽翔",
+  "湊",
+  "蓮",
+  "蒼",
+  "樹",
+  "結衣",
+  "凛",
+  "美咲",
+  "葵",
+  "紬",
+  "悠斗",
+  "大和",
+  "颯太",
+  "菜月",
+  "杏奈",
+  "琴音",
+  "晴",
+  "柚葉",
+  "奏",
+  "優奈",
+] as const;
+
+const nicknamePool = [
+  "たくみ",
+  "みなと",
+  "れん",
+  "あおい",
+  "ゆい",
+  "りん",
+  "みさき",
+  "そうた",
+  "かなで",
+  "ゆな",
+  "haru",
+  "natsu",
+  "koto",
+  "yamato",
+  "itsuki",
+] as const;
+
+const companyPool = [
+  "LINEヤフー株式会社",
+  "楽天グループ株式会社",
+  "株式会社サイバーエージェント",
+  "株式会社メルカリ",
+  "株式会社ディー・エヌ・エー",
+  "株式会社ミクシィ",
+  "GMOインターネットグループ株式会社",
+  "Sansan株式会社",
+  "freee株式会社",
+  "株式会社MIXI",
+  "チームラボ株式会社",
+  "株式会社Cygames",
+  "株式会社スクウェア・エニックス",
+  "株式会社バンダイナムコスタジオ",
+  "株式会社セガ",
+  "株式会社カプコン",
+  "Sky株式会社",
+  "SCSK株式会社",
+  "TIS株式会社",
+  "富士ソフト株式会社",
+  "株式会社オービック",
+  "株式会社大塚商会",
+  "株式会社NTTデータ",
+  "株式会社日立ソリューションズ",
+  "日本アイ・ビー・エム株式会社",
+  "アクセンチュア株式会社",
+  "株式会社野村総合研究所",
+  "株式会社電通総研",
+  "株式会社ゆめみ",
+  "株式会社MonotaRO",
+] as const;
+
+function pickFullName(index: number): string {
+  const family = familyNames[index % familyNames.length];
+  const given = givenNames[(index * 3) % givenNames.length];
+  return `${family} ${given}`;
+}
+
+function pickNickname(index: number): string {
+  const base = nicknamePool[index % nicknamePool.length];
+  return `${base}${String((index % 9) + 1)}`;
+}
+
+function pickCompanies(index: number): string[] {
+  const first = companyPool[index % companyPool.length];
+  const second = companyPool[(index + 7) % companyPool.length];
+
+  return index % 4 === 0 ? [first, second] : [first];
+}
+
 function pickDepartment(index: number): Department {
   return departments[index % departments.length];
 }
@@ -76,7 +191,7 @@ async function main() {
 
         return {
           email,
-          name: `Seed User ${index + 1}`,
+          name: pickFullName(index),
           studentId: `S${String(100000 + index + 1)}`,
           enrollmentYear,
           durationYears,
@@ -108,13 +223,13 @@ async function main() {
 
         return {
           userId: user.id,
-          nickname: `OB${String(index + 1).padStart(3, "0")}`,
+          nickname: pickNickname(index),
           graduationYear: 2020 + (index % 6),
           department,
           remarks:
             index % 5 === 0
-              ? "在校生向けに就活アドバイス対応可"
-              : "卒業生プロフィール（seed data）",
+              ? "ポートフォリオ添削や面接対策の相談歓迎です。"
+              : "現場で使う技術スタックや就活体験を共有できます。",
           contactEmail: user.email,
           isPublic: true,
           acceptContact: index % 4 !== 0,
@@ -140,15 +255,10 @@ async function main() {
 
     await prisma.alumniCompany.createMany({
       data: profiles.flatMap((profile, index) => {
-        const primaryCompany = `Seed Company ${String((index % 25) + 1).padStart(2, "0")}`;
-        const secondaryCompany = `Seed Offer ${String((index % 40) + 1).padStart(2, "0")}`;
-
-        return index % 3 === 0
-          ? [
-              { alumniProfileId: profile.id, companyName: primaryCompany },
-              { alumniProfileId: profile.id, companyName: secondaryCompany },
-            ]
-          : [{ alumniProfileId: profile.id, companyName: primaryCompany }];
+        return pickCompanies(index).map((companyName) => ({
+          alumniProfileId: profile.id,
+          companyName,
+        }));
       }),
       skipDuplicates: true,
     });

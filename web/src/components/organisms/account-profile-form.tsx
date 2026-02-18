@@ -51,10 +51,10 @@ const defaultState: AccountProfileFormState = {
   durationYears: "",
   department: "",
   nickname: "",
-  companyNames: [""],
+  companyNames: [],
   remarks: "",
   contactEmail: "",
-  isPublic: true,
+  isPublic: false,
   acceptContact: false,
 };
 
@@ -102,7 +102,10 @@ export function AccountProfileForm({
   const initialCompanyNames = initialProfile?.alumniProfile?.companyNames
     ?.length
     ? [...initialProfile.alumniProfile.companyNames]
-    : [""];
+    : [];
+  const initialIsPublic =
+    (initialProfile?.alumniProfile?.isPublic ?? false) &&
+    initialCompanyNames.length > 0;
 
   const [state, setState] = useState<AccountProfileFormState>({
     ...defaultState,
@@ -122,7 +125,7 @@ export function AccountProfileForm({
     remarks: initialProfile?.alumniProfile?.remarks ?? "",
     contactEmail:
       initialProfile?.alumniProfile?.contactEmail ?? initialEmail ?? "",
-    isPublic: initialProfile?.alumniProfile?.isPublic ?? true,
+    isPublic: initialIsPublic,
     acceptContact: initialProfile?.alumniProfile?.acceptContact ?? false,
   });
   const [companyRowIds, setCompanyRowIds] = useState<string[]>(() =>
@@ -145,7 +148,7 @@ export function AccountProfileForm({
     );
   }, [state]);
 
-  const canEditAlumniProfile = true;
+  const canEditAlumniProfile = state.isPublic;
 
   const setField = <K extends keyof AccountProfileFormState>(
     key: K,
@@ -171,26 +174,26 @@ export function AccountProfileForm({
   };
 
   const removeCompanyNameField = (index: number) => {
-    setCompanyRowIds((prev) => {
-      if (prev.length <= 1) {
-        return [createRowId()];
-      }
+    setCompanyRowIds((prev) =>
+      prev.filter((_, itemIndex) => itemIndex !== index),
+    );
 
-      return prev.filter((_, itemIndex) => itemIndex !== index);
-    });
-
-    setState((prev) => {
-      if (prev.companyNames.length <= 1) {
-        return { ...prev, companyNames: [""] };
-      }
-
-      return {
-        ...prev,
-        companyNames: prev.companyNames.filter(
-          (_, itemIndex) => itemIndex !== index,
-        ),
-      };
-    });
+    setState((prev) => ({
+      ...prev,
+      companyNames: prev.companyNames.filter(
+        (_, itemIndex) => itemIndex !== index,
+      ),
+      isPublic:
+        prev.companyNames.filter((_, itemIndex) => itemIndex !== index).length >
+        0
+          ? prev.isPublic
+          : false,
+      acceptContact:
+        prev.companyNames.filter((_, itemIndex) => itemIndex !== index).length >
+        0
+          ? prev.acceptContact
+          : false,
+    }));
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -210,6 +213,17 @@ export function AccountProfileForm({
           .filter((item) => item.length > 0),
       ),
     );
+    const normalizedContactEmail =
+      state.contactEmail.trim() || (initialEmail?.trim() ?? "");
+
+    if (
+      showPublicProfileFields &&
+      state.isPublic &&
+      normalizedCompanyNames.length === 0
+    ) {
+      setError("公開する場合は内定先・勤務先を1件以上入力してください。");
+      return;
+    }
 
     setIsSaving(true);
 
@@ -228,7 +242,7 @@ export function AccountProfileForm({
           nickname: state.nickname,
           companyNames: normalizedCompanyNames,
           remarks: state.remarks,
-          contactEmail: state.contactEmail,
+          contactEmail: normalizedContactEmail,
           isPublic: state.isPublic,
           acceptContact: state.acceptContact,
         }),
@@ -376,6 +390,29 @@ export function AccountProfileForm({
               公開プロフィール
             </p>
 
+            <div className="mt-2">
+              <label className="inline-flex items-center gap-2 rounded-xl border border-stone-200/80 bg-white/70 px-3 py-2 text-xs text-stone-700 dark:border-stone-700/60 dark:bg-stone-900/50 dark:text-stone-300">
+                <input
+                  type="checkbox"
+                  checked={state.isPublic}
+                  onChange={(event) => {
+                    const isPublic = event.target.checked;
+                    setState((prev) => ({
+                      ...prev,
+                      isPublic,
+                      acceptContact: isPublic ? prev.acceptContact : false,
+                    }));
+                  }}
+                />
+                公開する
+              </label>
+              {!state.isPublic ? (
+                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                  公開しない設定のため、公開プロフィール項目は編集できません。
+                </p>
+              ) : null}
+            </div>
+
             <div className="mt-2 grid gap-3 sm:grid-cols-2">
               <label htmlFor="profile-nickname" className="space-y-1.5">
                 <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
@@ -411,6 +448,12 @@ export function AccountProfileForm({
               <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
                 内定先・勤務先（複数可）
               </span>
+              {state.companyNames.length === 0 ? (
+                <p className="text-xs text-stone-500 dark:text-stone-400">
+                  まだ登録されていません。必要な場合は「+
+                  内定先を追加」から追加できます。
+                </p>
+              ) : null}
               {state.companyNames.map((companyName, index) => (
                 <div
                   key={companyRowIds[index]}
@@ -427,9 +470,7 @@ export function AccountProfileForm({
                   <Button
                     type="button"
                     onClick={() => removeCompanyNameField(index)}
-                    disabled={
-                      !canEditAlumniProfile || state.companyNames.length === 1
-                    }
+                    disabled={!canEditAlumniProfile}
                     className="h-10 shrink-0 !bg-gradient-to-r !from-rose-600 !to-pink-600 px-3 text-xs text-white hover:!from-rose-500 hover:!to-pink-500"
                   >
                     削除
@@ -448,18 +489,6 @@ export function AccountProfileForm({
 
             <div className="mt-3">
               <div className="grid gap-2">
-                <label className="inline-flex items-center gap-2 rounded-xl border border-stone-200/80 bg-white/70 px-3 py-2 text-xs text-stone-700 dark:border-stone-700/60 dark:bg-stone-900/50 dark:text-stone-300">
-                  <input
-                    type="checkbox"
-                    checked={state.isPublic}
-                    onChange={(event) =>
-                      setField("isPublic", event.target.checked)
-                    }
-                    disabled={!canEditAlumniProfile}
-                  />
-                  内定先情報を公開する
-                </label>
-
                 <label className="inline-flex items-center gap-2 rounded-xl border border-stone-200/80 bg-white/70 px-3 py-2 text-xs text-stone-700 dark:border-stone-700/60 dark:bg-stone-900/50 dark:text-stone-300">
                   <input
                     type="checkbox"
@@ -503,7 +532,7 @@ export function AccountProfileForm({
 
         <div className="pt-1">
           <Button type="submit" disabled={isSaving}>
-            {isSaving ? "保存中..." : "更新を保存"}
+            {isSaving ? "保存中..." : showPublicProfileFields ? "更新" : "更新"}
           </Button>
         </div>
       </form>

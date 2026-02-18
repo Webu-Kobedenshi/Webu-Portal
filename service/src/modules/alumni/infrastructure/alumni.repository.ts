@@ -294,6 +294,14 @@ export class AlumniRepository {
     return this.toUserDto(record);
   }
 
+  async deleteUserById(userId: string): Promise<boolean> {
+    const result = await this.prisma.user.deleteMany({
+      where: { id: userId },
+    });
+
+    return result.count > 0;
+  }
+
   async upsertAlumniProfile(
     userId: string,
     input: UpdateAlumniProfileInput,
@@ -334,13 +342,15 @@ export class AlumniRepository {
         },
       });
 
-      await transaction.alumniCompany.createMany({
-        data: input.companyNames.map((companyName) => ({
-          alumniProfileId: profile.id,
-          companyName,
-        })),
-        skipDuplicates: true,
-      });
+      if (input.companyNames.length > 0) {
+        await transaction.alumniCompany.createMany({
+          data: input.companyNames.map((companyName) => ({
+            alumniProfileId: profile.id,
+            companyName,
+          })),
+          skipDuplicates: true,
+        });
+      }
 
       return profile.id;
     });

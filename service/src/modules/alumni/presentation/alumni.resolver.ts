@@ -83,4 +83,9 @@ export class AlumniResolver {
   ): Promise<AlumniProfileDto> {
     return this.alumniCommandService.updateAlumniProfile(user.id, input);
   }
+
+  @Mutation("deleteMyAccount")
+  deleteMyAccount(@CurrentUser() user: User): Promise<boolean> {
+    return this.alumniCommandService.deleteMyAccount(user.id);
+  }
 }

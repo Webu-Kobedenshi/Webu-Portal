@@ -62,6 +62,10 @@ export class AlumniCommandService {
     });
   }
 
+  deleteMyAccount(userId: string): Promise<boolean> {
+    return this.alumniRepository.deleteUserById(userId);
+  }
+
   async updateAlumniProfile(
     userId: string,
     input: UpdateAlumniProfileInput,
@@ -75,20 +79,24 @@ export class AlumniCommandService {
       new Set(input.companyNames.map((item) => item.trim()).filter((item) => item.length > 0)),
     );
 
-    if (companyNames.length === 0) {
-      throw new BadRequestException("companyNames must contain at least one item");
-    }
-
     const { isPublic, acceptContact } = resolveProfileVisibility({
       isPublic: input.isPublic,
       acceptContact: input.acceptContact,
     });
+    const contactEmail = input.contactEmail?.trim() || user.email;
+
+    if (isPublic && companyNames.length === 0) {
+      throw new BadRequestException(
+        "companyNames must contain at least one item when isPublic is true",
+      );
+    }
 
     return this.alumniRepository.upsertAlumniProfile(userId, {
       ...input,
       companyNames,
+      contactEmail,
       isPublic,
-      acceptContact,
+      acceptContact: isPublic ? acceptContact : false,
     });
   }
 }

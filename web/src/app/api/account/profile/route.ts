@@ -138,13 +138,17 @@ export async function POST(request: Request) {
   const companyNames = (body.companyNames ?? [])
     .map((item) => item.trim())
     .filter((item) => item.length > 0);
+  const contactEmail = body.contactEmail?.trim() || session.user?.email || undefined;
+  const isPublic = body.isPublic ?? false;
 
-  if (companyNames.length === 0) {
-    return NextResponse.json({
-      ok: true,
-      alumniUpdated: false,
-      message: "Initial settings saved. companyNames is required for alumni profile.",
-    });
+  if (isPublic && companyNames.length === 0) {
+    return NextResponse.json(
+      {
+        ok: false,
+        message: "公開する場合は companyNames を1件以上指定してください",
+      },
+      { status: 400 },
+    );
   }
 
   const graduationYear = body.enrollmentYear + body.durationYears;
@@ -159,9 +163,9 @@ export async function POST(request: Request) {
         department: body.department,
         companyNames,
         remarks: body.remarks,
-        contactEmail: body.contactEmail,
-        isPublic: body.isPublic,
-        acceptContact: body.acceptContact,
+        contactEmail,
+        isPublic,
+        acceptContact: isPublic ? body.acceptContact : false,
       },
     },
   );
