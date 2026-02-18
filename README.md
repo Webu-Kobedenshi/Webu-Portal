@@ -2,7 +2,7 @@
 
 Next.js(App Router) + NestJS(GraphQL schema-first) + PostgreSQL(Prisma) を Docker Compose でまとめた開発環境です。
 
-詳細な技術選定については [TECH_STACK.md](./TECH_STACK.md) をご覧ください。
+詳細な技術選定については [Docs/TECH_STACK.md](./Docs/TECH_STACK.md) をご覧ください。
 
 ## 構成
 

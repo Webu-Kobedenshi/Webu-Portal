@@ -3,7 +3,7 @@ import { ApolloDriver, type ApolloDriverConfig } from "@nestjs/apollo";
 import { Module } from "@nestjs/common";
 import { GraphQLModule } from "@nestjs/graphql";
 import { AppResolver } from "./app.resolver";
-import { PrismaService } from "./prisma.service";
+import { AlumniModule } from "./modules/alumni/alumni.module";
 
 @Module({
   imports: [
@@ -12,7 +12,8 @@ import { PrismaService } from "./prisma.service";
       typePaths: [join(process.cwd(), "src/**/*.graphql")],
       playground: true,
     }),
+    AlumniModule,
   ],
-  providers: [AppResolver, PrismaService],
+  providers: [AppResolver],
 })
 export class AppModule {}

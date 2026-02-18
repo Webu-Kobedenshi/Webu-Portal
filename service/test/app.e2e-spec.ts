@@ -16,7 +16,13 @@ describe("AppController (e2e)", () => {
     await app.init();
   });
 
-  it("/ (GET)", () => {
-    return request(app.getHttpServer()).get("/").expect(200).expect("Hello World!");
+  it("/graphql (POST) health", () => {
+    return request(app.getHttpServer())
+      .post("/graphql")
+      .send({ query: "{ health }" })
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.data.health).toBe("ok");
+      });
   });
 });

@@ -12,9 +12,32 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Department {
+  GAME
+  IT
+  DESIGN
+  CG
+  SOUND
+  OTHER
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Alumni {
+  id            String     @id @default(cuid())
+  name          String
+  graduationYear Int
+  department    Department
+  company       String
+  message       String?
+  contactEmail  String?
+  isContactable Boolean    @default(false)
+  isPublic      Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 }

@@ -1,4 +1,7 @@
 type Query {
-  hello: String!
   health: String!
+}
+
+type Mutation {
+  _noop: String
 }

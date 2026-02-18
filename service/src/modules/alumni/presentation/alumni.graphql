@@ -1,0 +1,54 @@
+enum Department {
+  GAME
+  IT
+  DESIGN
+  CG
+  SOUND
+  OTHER
+}
+
+type Alumni {
+  id: ID!
+  name: String!
+  graduationYear: Int!
+  department: Department!
+  company: String!
+  message: String
+  contactEmail: String
+  isContactable: Boolean!
+  isPublic: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+input CreateAlumniInput {
+  name: String!
+  graduationYear: Int!
+  department: Department!
+  company: String!
+  message: String
+  contactEmail: String
+  isContactable: Boolean
+  isPublic: Boolean
+}
+
+input UpdateAlumniInput {
+  name: String
+  graduationYear: Int
+  department: Department
+  company: String
+  message: String
+  contactEmail: String
+  isContactable: Boolean
+  isPublic: Boolean
+}
+
+extend type Query {
+  alumniList(search: String, department: Department): [Alumni!]!
+  alumniById(id: ID!): Alumni
+}
+
+extend type Mutation {
+  createAlumni(input: CreateAlumniInput!): Alumni!
+  updateAlumni(id: ID!, input: UpdateAlumniInput!): Alumni!
+}

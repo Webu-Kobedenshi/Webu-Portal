@@ -1,0 +1,15 @@
+query AlumniList($search: String, $department: Department) {
+  alumniList(search: $search, department: $department) {
+    id
+    name
+    graduationYear
+    department
+    company
+    message
+    contactEmail
+    isContactable
+    isPublic
+    createdAt
+    updatedAt
+  }
+}
