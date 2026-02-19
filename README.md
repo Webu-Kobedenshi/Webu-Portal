@@ -2,13 +2,20 @@
 
 Next.js(App Router) + NestJS(GraphQL schema-first) + PostgreSQL(Prisma) を Docker Compose でまとめた開発環境です。
 
-詳細な技術選定については [Docs/TECH_STACK.md](./Docs/TECH_STACK.md) をご覧ください。
+詳細は Docs 配下を参照してください。
+
+- [Docs/STATUS.md](./Docs/STATUS.md): 現在の開発進捗
+- [Docs/TECH_STACK.md](./Docs/TECH_STACK.md): 技術スタック（最新版）
+- [Docs/Architecture.md](./Docs/Architecture.md): アーキテクチャ定義
+- [Docs/OPERATIONS_SPEC.md](./Docs/OPERATIONS_SPEC.md): 運用仕様
+- [Docs/PRD.md](./Docs/PRD.md): 要件定義（プロダクト視点）
 
 ## 構成
 
 - web: Next.js(App Router)
 - service: NestJS + GraphQL(schema-first) + Prisma
 - db: PostgreSQL
+- object storage: MinIO（プロフィール画像）
 
 ## 前提
 
@@ -64,7 +71,18 @@ pnpm prisma:migrate
 pnpm prisma:studio
 ```
 
+## 現在の開発進捗（2026-02-19）
+
+- 認証: NextAuth + Google OAuth（許可ドメイン制限あり）
+- API保護: NestJS 側 GraphQL Resolver を `GqlAuthGuard` で保護
+- 初期設定: 名前 / 学籍番号 / 入学年度 / 年制 / 学科の更新フロー実装済み
+- 公開プロフィール: 内定先（複数）・備考・連絡先・公開可否を更新可能
+- 一覧: 学科・企業名でのフィルタ + ページネーション対応
+- アカウント: プロフィール更新 / 退会（関連データ Cascade 削除）対応
+- 画像: MinIO への署名付きURLアップロード + `avatarUrl` 保存対応
+- サービス構造: Layered + CQRS 構成。`Query` 側副作用を排除するリファクタ実施済み
+
 ## 備考
 
-- Google OAuth（`@kdps.ac.jp` ドメイン制限）を前提
+- Google OAuth（既定: `@st.kobedenshi.ac.jp`、`AUTH_ALLOWED_DOMAINS` で変更可）
 - Node 22 LTS 想定のため、Node 23 以上の場合は切り替えを推奨

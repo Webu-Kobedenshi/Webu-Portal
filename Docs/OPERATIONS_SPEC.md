@@ -30,20 +30,27 @@
   - `role: STUDENT -> ALUMNI`
   - `status: ENROLLED -> GRADUATED`
 - 判定タイミング:
-  - `getMyProfile` 実行時（アクセス時に再計算）
+  - `getMyProfile` 実行時に再計算
+  - 現在は「返却値への反映」を行い、Query内でDB更新は行わない（CQRSの読み取り責務を維持）
 
 ### 2.4 公開プロフィール運用
 
-`ALUMNI`（または `ADMIN`）のみ、公開プロフィール更新を許可。
+公開プロフィール（`updateAlumniProfile`）では以下項目を更新可能。
 
 更新対象:
 
-- `companyName`
+- `companyNames`（複数）
 - `nickname`
 - `remarks`
 - `contactEmail`
 - `isPublic`
 - `acceptContact`
+
+運用ルール:
+
+- `isPublic=true` の場合、`companyNames` は1件以上必須
+- 画像は `getUploadUrl` で署名付きURLを取得し、アップロード後 `updateAvatar` でURLを保存
+- ※要件上の「ALUMNI限定編集」は今後の厳格化対象（現実装は本人トークン前提の更新）
 
 ---
 
@@ -51,14 +58,12 @@
 
 一覧表示に含める条件:
 
-1. `user.role == ALUMNI`
-2. `user.status == GRADUATED`
-3. `alumniProfile.isPublic == true`
+1. `alumniProfile.isPublic == true`
 
 追加フィルタ:
 
 - 学科（`department`）
-- 企業名キーワード（`companyName contains`、大文字小文字非区別）
+- 企業名キーワード（`companyNames contains`、大文字小文字非区別）
 
 ---
 
@@ -78,9 +83,15 @@
 
 ### 4.3 卒業後フェーズ（ALUMNI）
 
-1. アクセス時にロール昇格
+1. `getMyProfile` 実行時にロール/ステータスを再計算
 2. アカウントページで公開プロフィールを更新
 3. `isPublic=true` の場合、一覧に表示対象となる
+
+### 4.4 アバター更新フロー
+
+1. `POST /api/account/avatar/upload-url`
+2. 返却された署名付きURLへ `PUT`
+3. `POST /api/account/avatar/complete` で `avatarUrl` を永続化
 
 ---
 
@@ -88,7 +99,7 @@
 
 - GraphQL Resolver は `GqlAuthGuard` で保護
 - 初期設定更新時に入力値バリデーション（年制 2/3/4 等）
-- ALUMNI以外の公開プロフィール更新は拒否
+- 公開プロフィール更新時は公開条件を検証（公開時の company 必須）
 - 退会時は `onDelete: Cascade` により関連データを物理削除
 
 ---
@@ -103,6 +114,7 @@
 - `service/src/modules/alumni/infrastructure/alumni.repository.ts`
 - `service/src/modules/alumni/presentation/alumni.graphql`
 - `service/src/modules/alumni/presentation/alumni.resolver.ts`
+- `service/src/modules/alumni/infrastructure/storage.service.ts`
 
 ### Frontend
 
@@ -113,6 +125,9 @@
 - `web/src/graphql/alumni.ts`
 - `web/src/graphql/account.ts`
 - `web/src/app/api/account/profile/route.ts`
+- `web/src/app/api/account/avatar/upload-url/route.ts`
+- `web/src/app/api/account/avatar/complete/route.ts`
+- `web/src/app/api/account/delete/route.ts`
 
 ---
 

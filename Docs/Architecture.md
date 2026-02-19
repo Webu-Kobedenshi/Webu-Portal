@@ -158,9 +158,18 @@
 
 **Authentication**
 
-- Google OAuth (@kdps.ac.jp domain)
+- Google OAuth（既定: `@st.kobedenshi.ac.jp`、`AUTH_ALLOWED_DOMAINS` で変更可能）
 
 **Authorization**
 
 - 全ての GraphQL Resolver は GqlAuthGuard 等で保護すること
 - プロフィール編集時は、userId がログインユーザー本人であることを必ず検証すること
+
+## 8. Update Log (2026-02-19)
+
+- `alumni` モジュールで Layer/CQRS の責務を再整理
+  - QueryサービスでのDB更新副作用を除去
+  - 返却DTOで role/status を解決して読み取り責務を維持
+- 入力型を `application/dto/alumni.input.ts` に集約し、Resolver/Service の重複定義を削減
+- Repository の `select` / DTO 変換の重複を統合して保守性を改善
+- MinIO を使ったアバターアップロード（署名付きURL + URL保存）を実装
