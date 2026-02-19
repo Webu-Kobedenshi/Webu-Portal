@@ -84,6 +84,7 @@
 ## 6. 参考
 
 - [Architecture.md](./Architecture.md)
+- [GIT_WORKFLOW.md](./GIT_WORKFLOW.md)
 - [TECH_STACK.md](./TECH_STACK.md)
 - [OPERATIONS_SPEC.md](./OPERATIONS_SPEC.md)
 - [PRD.md](./PRD.md)
