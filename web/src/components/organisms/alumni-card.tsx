@@ -29,38 +29,35 @@ const departmentLabel: Record<AlumniProfile["department"], string> = {
   OTHERS: "その他",
 };
 
-const departmentGradient: Partial<Record<AlumniProfile["department"], string>> =
-  {
-    IT_EXPERT: "from-violet-500 to-indigo-500",
-    IT_SPECIALIST: "from-blue-500 to-cyan-500",
-    INFORMATION_PROCESS: "from-sky-500 to-blue-500",
-    PROGRAMMING: "from-emerald-500 to-teal-500",
-    AI_SYSTEM: "from-purple-500 to-violet-500",
-    ADVANCED_STUDIES: "from-amber-500 to-orange-500",
-    INFO_BUSINESS: "from-cyan-500 to-blue-500",
-    INFO_ENGINEERING: "from-indigo-500 to-blue-500",
-    GAME_RESEARCH: "from-rose-500 to-pink-500",
-    GAME_ENGINEER: "from-red-500 to-rose-500",
-    GAME_SOFTWARE: "from-pink-500 to-fuchsia-500",
-    ESPORTS: "from-lime-500 to-green-500",
-    CG_ANIMATION: "from-fuchsia-500 to-purple-500",
-    DIGITAL_ANIME: "from-pink-500 to-rose-500",
-    GRAPHIC_DESIGN: "from-orange-500 to-amber-500",
-    INDUSTRIAL_DESIGN: "from-teal-500 to-emerald-500",
-    ARCHITECTURAL: "from-stone-500 to-zinc-500",
-    SOUND_CREATE: "from-yellow-500 to-amber-500",
-    SOUND_TECHNIQUE: "from-amber-500 to-yellow-500",
-    VOICE_ACTOR: "from-rose-400 to-pink-400",
-    INTERNATIONAL_COMM: "from-blue-500 to-indigo-500",
-    OTHERS: "from-gray-500 to-slate-500",
-  };
+const departmentGradient: Partial<Record<AlumniProfile["department"], string>> = {
+  IT_EXPERT: "from-violet-500 to-indigo-500",
+  IT_SPECIALIST: "from-blue-500 to-cyan-500",
+  INFORMATION_PROCESS: "from-sky-500 to-blue-500",
+  PROGRAMMING: "from-emerald-500 to-teal-500",
+  AI_SYSTEM: "from-purple-500 to-violet-500",
+  ADVANCED_STUDIES: "from-amber-500 to-orange-500",
+  INFO_BUSINESS: "from-cyan-500 to-blue-500",
+  INFO_ENGINEERING: "from-indigo-500 to-blue-500",
+  GAME_RESEARCH: "from-rose-500 to-pink-500",
+  GAME_ENGINEER: "from-red-500 to-rose-500",
+  GAME_SOFTWARE: "from-pink-500 to-fuchsia-500",
+  ESPORTS: "from-lime-500 to-green-500",
+  CG_ANIMATION: "from-fuchsia-500 to-purple-500",
+  DIGITAL_ANIME: "from-pink-500 to-rose-500",
+  GRAPHIC_DESIGN: "from-orange-500 to-amber-500",
+  INDUSTRIAL_DESIGN: "from-teal-500 to-emerald-500",
+  ARCHITECTURAL: "from-stone-500 to-zinc-500",
+  SOUND_CREATE: "from-yellow-500 to-amber-500",
+  SOUND_TECHNIQUE: "from-amber-500 to-yellow-500",
+  VOICE_ACTOR: "from-rose-400 to-pink-400",
+  INTERNATIONAL_COMM: "from-blue-500 to-indigo-500",
+  OTHERS: "from-gray-500 to-slate-500",
+};
 
 export function AlumniCard({ alumni }: AlumniCardProps) {
   const initial = (alumni.nickname ?? "匿")[0];
-  const gradient =
-    departmentGradient[alumni.department] ?? "from-gray-500 to-slate-500";
-  const companyNames =
-    alumni.companyNames.length > 0 ? alumni.companyNames : ["未設定"];
+  const gradient = departmentGradient[alumni.department] ?? "from-gray-500 to-slate-500";
+  const companyNames = alumni.companyNames.length > 0 ? alumni.companyNames : ["未設定"];
   const [primaryCompany, ...otherCompanies] = companyNames;
   const canContact = alumni.acceptContact && Boolean(alumni.contactEmail);
   const displayName = alumni.nickname ?? "匿名";
@@ -70,9 +67,7 @@ export function AlumniCard({ alumni }: AlumniCardProps) {
       {/* ── Hero zone ── */}
       <div className="relative h-28 overflow-hidden">
         {/* Gradient background — always present */}
-        <div
-          className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-90`}
-        />
+        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-90`} />
         {/* Blurred avatar as hero backdrop */}
         {alumni.avatarUrl ? (
           <img
@@ -88,10 +83,7 @@ export function AlumniCard({ alumni }: AlumniCardProps) {
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(255,255,255,0.35),transparent_55%),radial-gradient(circle_at_85%_30%,rgba(255,255,255,0.2),transparent_45%)]"
         />
         {/* Floating confetti dots */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 overflow-hidden"
-        >
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
           <span className="absolute left-[12%] top-[18%] h-1.5 w-1.5 rounded-full bg-white/60 blur-[0.5px]" />
           <span className="absolute left-[30%] top-[65%] h-1 w-1 rounded-full bg-white/50" />
           <span className="absolute left-[55%] top-[22%] h-2 w-2 rounded-full bg-white/30 blur-[1px]" />

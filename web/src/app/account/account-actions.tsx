@@ -8,9 +8,7 @@ export function AccountActions() {
   const [message, setMessage] = useState<string | null>(null);
 
   const handleDelete = async () => {
-    if (
-      !confirm("本当にアカウントを削除しますか？この操作は元に戻せません。")
-    ) {
+    if (!confirm("本当にアカウントを削除しますか？この操作は元に戻せません。")) {
       return;
     }
 
@@ -35,7 +33,7 @@ export function AccountActions() {
   };
 
   return (
-    <section className="rounded-2xl border border-stone-100 bg-stone-50/60 p-5 dark:border-stone-800/60 dark:bg-stone-900/30">
+    <section className="rounded-2xl border border-stone-200/90 bg-white p-5 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.25)] dark:border-stone-800/80 dark:bg-stone-900/40">
       <div className="flex items-center gap-2">
         <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-stone-200 text-sm dark:bg-stone-700">
           <svg
@@ -54,9 +52,7 @@ export function AccountActions() {
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
         </span>
-        <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-          アカウント操作
-        </h3>
+        <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">アカウント操作</h3>
       </div>
 
       {message ? (

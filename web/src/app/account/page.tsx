@@ -20,11 +20,7 @@ const roleGradient: Record<"STUDENT" | "ALUMNI" | "ADMIN", string> = {
 export default async function AccountPage() {
   const session = await getServerSession(authOptions);
   const { profile } = await fetchMyProfile();
-  const role = (profile?.role ?? session?.user?.role) as
-    | "STUDENT"
-    | "ALUMNI"
-    | "ADMIN"
-    | undefined;
+  const role = (profile?.role ?? session?.user?.role) as "STUDENT" | "ALUMNI" | "ADMIN" | undefined;
   const displayName = profile?.name ?? session?.user?.name ?? "ユーザー";
   const email = profile?.email ?? session?.user?.email ?? "";
   const initial = (displayName || "U")[0].toUpperCase();
@@ -58,7 +54,7 @@ export default async function AccountPage() {
       </nav>
 
       {/* ── Profile Hero ── */}
-      <section className="relative isolate overflow-hidden rounded-3xl bg-white dark:bg-stone-950">
+      <section className="relative isolate overflow-hidden rounded-3xl border border-stone-200/90 bg-white shadow-[0_10px_30px_-18px_rgba(0,0,0,0.25)] ring-1 ring-stone-100/80 dark:border-stone-800 dark:bg-stone-950 dark:ring-stone-800/60">
         {/* Hero banner */}
         <div className={`relative h-32 bg-gradient-to-br ${gradient} md:h-36`}>
           <div
@@ -66,10 +62,7 @@ export default async function AccountPage() {
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.3),transparent_55%),radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.15),transparent_40%)]"
           />
           {/* Floating dots */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 overflow-hidden"
-          >
+          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
             <span className="absolute left-[10%] top-[25%] h-2 w-2 rounded-full bg-white/40 blur-[0.5px]" />
             <span className="absolute left-[35%] top-[60%] h-1.5 w-1.5 rounded-full bg-white/35" />
             <span className="absolute left-[60%] top-[20%] h-2.5 w-2.5 rounded-full bg-white/20 blur-[1px]" />
@@ -110,16 +103,18 @@ export default async function AccountPage() {
             ) : null}
           </div>
 
-          {/* ── Profile Form ── */}
-          <AccountProfileForm
-            initialProfile={profile}
-            initialName={profile?.name ?? session?.user?.name}
-            initialEmail={profile?.email ?? session?.user?.email}
-          />
+          <div className="mt-6 border-t border-stone-200/80 pt-6 dark:border-stone-800/70">
+            {/* ── Profile Form ── */}
+            <AccountProfileForm
+              initialProfile={profile}
+              initialName={profile?.name ?? session?.user?.name}
+              initialEmail={profile?.email ?? session?.user?.email}
+            />
 
-          {/* ── Account Actions ── */}
-          <div className="mt-6">
-            <AccountActions />
+            {/* ── Account Actions ── */}
+            <div className="mt-6">
+              <AccountActions />
+            </div>
           </div>
         </div>
       </section>

@@ -22,10 +22,9 @@ export class StorageService {
     this.endpoint = process.env.ENDPOINT ?? "http://minio:9000";
     this.publicEndpoint =
       process.env.PUBLIC_ENDPOINT ??
-      this.endpoint.replace("http://minio:", "http://localhost:").replace(
-        "https://minio:",
-        "https://localhost:",
-      );
+      this.endpoint
+        .replace("http://minio:", "http://localhost:")
+        .replace("https://minio:", "https://localhost:");
     this.accessKey = process.env.ACCESS_KEY ?? "minioadmin";
     this.secretKey = process.env.SECRET_KEY ?? "minioadmin";
     this.bucketName = process.env.BUCKET_NAME ?? "webu-portal";
