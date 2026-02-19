@@ -3,7 +3,14 @@ import { resolveProfileVisibility } from "../../domain/alumni-profile-policy";
 import type { Department } from "../../domain/types/department";
 import { resolveRoleAndStatus } from "../../domain/user-role-transition";
 import { AlumniRepository } from "../../infrastructure/alumni.repository";
+import { StorageService } from "../../infrastructure/storage.service";
 import type { AlumniProfileDto, UserDto } from "../dto/alumni.dto";
+
+type UploadUrlResponse = {
+  uploadUrl: string;
+  fileUrl: string;
+  key: string;
+};
 
 type InitialSettingsInput = {
   name: string;
@@ -26,7 +33,10 @@ type UpdateAlumniProfileInput = {
 
 @Injectable()
 export class AlumniCommandService {
-  constructor(@Inject(AlumniRepository) private readonly alumniRepository: AlumniRepository) {}
+  constructor(
+    @Inject(AlumniRepository) private readonly alumniRepository: AlumniRepository,
+    @Inject(StorageService) private readonly storageService: StorageService,
+  ) {}
 
   updateInitialSettings(userId: string, input: InitialSettingsInput): Promise<UserDto> {
     const name = input.name.trim();
@@ -98,5 +108,42 @@ export class AlumniCommandService {
       isPublic,
       acceptContact: isPublic ? acceptContact : false,
     });
+  }
+
+  getUploadUrl(userId: string, fileName: string, contentType: string): Promise<UploadUrlResponse> {
+    const normalizedFileName = fileName.trim();
+    const normalizedContentType = contentType.trim();
+
+    if (!normalizedFileName) {
+      throw new BadRequestException("fileName is required");
+    }
+
+    if (!normalizedContentType) {
+      throw new BadRequestException("contentType is required");
+    }
+
+    if (!normalizedContentType.startsWith("image/")) {
+      throw new BadRequestException("contentType must be image/*");
+    }
+
+    return this.storageService.createPutUploadUrl({
+      userId,
+      fileName: normalizedFileName,
+      contentType: normalizedContentType,
+    });
+  }
+
+  async updateAvatar(userId: string, url: string): Promise<AlumniProfileDto> {
+    const normalizedUrl = url.trim();
+    if (!normalizedUrl) {
+      throw new BadRequestException("url is required");
+    }
+
+    const updated = await this.alumniRepository.updateAvatarUrl(userId, normalizedUrl);
+    if (!updated) {
+      throw new BadRequestException("Alumni profile not found");
+    }
+
+    return updated;
   }
 }

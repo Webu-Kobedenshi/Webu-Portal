@@ -1,4 +1,3 @@
-import { Card } from "@/components/atoms/card";
 import type { AlumniProfile } from "@/graphql/types";
 
 type AlumniCardProps = {
@@ -30,127 +29,190 @@ const departmentLabel: Record<AlumniProfile["department"], string> = {
   OTHERS: "その他",
 };
 
-const departmentGradient: Partial<Record<AlumniProfile["department"], string>> = {
-  IT_EXPERT: "from-violet-500 to-indigo-500",
-  IT_SPECIALIST: "from-blue-500 to-cyan-500",
-  INFORMATION_PROCESS: "from-sky-500 to-blue-500",
-  PROGRAMMING: "from-emerald-500 to-teal-500",
-  AI_SYSTEM: "from-purple-500 to-violet-500",
-  ADVANCED_STUDIES: "from-amber-500 to-orange-500",
-  INFO_BUSINESS: "from-cyan-500 to-blue-500",
-  INFO_ENGINEERING: "from-indigo-500 to-blue-500",
-  GAME_RESEARCH: "from-rose-500 to-pink-500",
-  GAME_ENGINEER: "from-red-500 to-rose-500",
-  GAME_SOFTWARE: "from-pink-500 to-fuchsia-500",
-  ESPORTS: "from-lime-500 to-green-500",
-  CG_ANIMATION: "from-fuchsia-500 to-purple-500",
-  DIGITAL_ANIME: "from-pink-500 to-rose-500",
-  GRAPHIC_DESIGN: "from-orange-500 to-amber-500",
-  INDUSTRIAL_DESIGN: "from-teal-500 to-emerald-500",
-  ARCHITECTURAL: "from-stone-500 to-zinc-500",
-  SOUND_CREATE: "from-yellow-500 to-amber-500",
-  SOUND_TECHNIQUE: "from-amber-500 to-yellow-500",
-  VOICE_ACTOR: "from-rose-400 to-pink-400",
-  INTERNATIONAL_COMM: "from-blue-500 to-indigo-500",
-  OTHERS: "from-gray-500 to-slate-500",
-};
+const departmentGradient: Partial<Record<AlumniProfile["department"], string>> =
+  {
+    IT_EXPERT: "from-violet-500 to-indigo-500",
+    IT_SPECIALIST: "from-blue-500 to-cyan-500",
+    INFORMATION_PROCESS: "from-sky-500 to-blue-500",
+    PROGRAMMING: "from-emerald-500 to-teal-500",
+    AI_SYSTEM: "from-purple-500 to-violet-500",
+    ADVANCED_STUDIES: "from-amber-500 to-orange-500",
+    INFO_BUSINESS: "from-cyan-500 to-blue-500",
+    INFO_ENGINEERING: "from-indigo-500 to-blue-500",
+    GAME_RESEARCH: "from-rose-500 to-pink-500",
+    GAME_ENGINEER: "from-red-500 to-rose-500",
+    GAME_SOFTWARE: "from-pink-500 to-fuchsia-500",
+    ESPORTS: "from-lime-500 to-green-500",
+    CG_ANIMATION: "from-fuchsia-500 to-purple-500",
+    DIGITAL_ANIME: "from-pink-500 to-rose-500",
+    GRAPHIC_DESIGN: "from-orange-500 to-amber-500",
+    INDUSTRIAL_DESIGN: "from-teal-500 to-emerald-500",
+    ARCHITECTURAL: "from-stone-500 to-zinc-500",
+    SOUND_CREATE: "from-yellow-500 to-amber-500",
+    SOUND_TECHNIQUE: "from-amber-500 to-yellow-500",
+    VOICE_ACTOR: "from-rose-400 to-pink-400",
+    INTERNATIONAL_COMM: "from-blue-500 to-indigo-500",
+    OTHERS: "from-gray-500 to-slate-500",
+  };
 
 export function AlumniCard({ alumni }: AlumniCardProps) {
   const initial = (alumni.nickname ?? "匿")[0];
-  const gradient = departmentGradient[alumni.department] ?? "from-gray-500 to-slate-500";
-  const companyNames = alumni.companyNames.length > 0 ? alumni.companyNames : ["未設定"];
+  const gradient =
+    departmentGradient[alumni.department] ?? "from-gray-500 to-slate-500";
+  const companyNames =
+    alumni.companyNames.length > 0 ? alumni.companyNames : ["未設定"];
+  const [primaryCompany, ...otherCompanies] = companyNames;
+  const canContact = alumni.acceptContact && Boolean(alumni.contactEmail);
+  const displayName = alumni.nickname ?? "匿名";
 
   return (
-    <Card className="group relative overflow-hidden border-amber-200/80 bg-gradient-to-br from-amber-50/95 via-orange-50/80 to-rose-50/75 p-0 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-amber-500/15 dark:border-amber-600/45 dark:from-amber-800/45 dark:via-orange-800/35 dark:to-rose-800/35 dark:hover:shadow-amber-300/15">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_70%_at_0%_0%,rgba(251,191,36,0.22),transparent_60%),radial-gradient(100%_60%_at_100%_0%,rgba(251,146,60,0.18),transparent_65%),radial-gradient(120%_80%_at_50%_100%,rgba(244,114,182,0.12),transparent_70%)] dark:bg-[radial-gradient(120%_70%_at_0%_0%,rgba(253,230,138,0.18),transparent_60%),radial-gradient(100%_60%_at_100%_0%,rgba(253,186,116,0.16),transparent_65%),radial-gradient(120%_80%_at_50%_100%,rgba(251,113,133,0.12),transparent_70%)]"
-      />
-
-      {/* Department accent bar */}
-      <div
-        className={`h-1 w-full bg-gradient-to-r ${gradient} opacity-50 transition-opacity duration-300 group-hover:opacity-100`}
-      />
-
-      <div className="relative p-4">
-        <p className="mb-2 inline-flex items-center gap-1 rounded-full border border-amber-200/80 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 px-2.5 py-1 text-[10px] font-semibold tracking-[0.06em] text-amber-700 dark:border-amber-600/50 dark:from-amber-800/45 dark:via-yellow-800/35 dark:to-orange-800/45 dark:text-amber-200">
-          <span aria-hidden>🎉</span>
-          内定おめでとう！
-        </p>
-
-        {/* Company name — hero element */}
-        <div className="mb-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-rose-500 dark:text-rose-300">
-            内定先・勤務先
-          </p>
-          <ul className="mt-1 space-y-1">
-            {companyNames.slice(0, 3).map((companyName) => (
-              <li
-                key={companyName}
-                className="line-clamp-1 text-sm font-bold leading-snug tracking-tight text-stone-900 dark:text-stone-100"
-              >
-                {companyName}
-              </li>
-            ))}
-          </ul>
+    <article className="alumni-card group relative isolate overflow-hidden rounded-3xl bg-white transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_20px_60px_-12px_rgba(0,0,0,0.15)] dark:bg-stone-950 dark:hover:shadow-[0_20px_60px_-12px_rgba(0,0,0,0.5)]">
+      {/* ── Hero zone ── */}
+      <div className="relative h-28 overflow-hidden">
+        {/* Gradient background — always present */}
+        <div
+          className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-90`}
+        />
+        {/* Blurred avatar as hero backdrop */}
+        {alumni.avatarUrl ? (
+          <img
+            src={alumni.avatarUrl}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 h-full w-full object-cover mix-blend-overlay opacity-40"
+          />
+        ) : null}
+        {/* Decorative light effects */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(255,255,255,0.35),transparent_55%),radial-gradient(circle_at_85%_30%,rgba(255,255,255,0.2),transparent_45%)]"
+        />
+        {/* Floating confetti dots */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 overflow-hidden"
+        >
+          <span className="absolute left-[12%] top-[18%] h-1.5 w-1.5 rounded-full bg-white/60 blur-[0.5px]" />
+          <span className="absolute left-[30%] top-[65%] h-1 w-1 rounded-full bg-white/50" />
+          <span className="absolute left-[55%] top-[22%] h-2 w-2 rounded-full bg-white/30 blur-[1px]" />
+          <span className="absolute left-[75%] top-[55%] h-1 w-1 rounded-full bg-white/50" />
+          <span className="absolute left-[88%] top-[25%] h-1.5 w-1.5 rounded-full bg-white/40 blur-[0.5px]" />
         </div>
+        {/* Celebration badge — floats in hero zone */}
+        <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold tracking-wide text-amber-700 shadow-sm backdrop-blur-md dark:bg-black/50 dark:text-amber-200">
+          🎉 内定おめでとう！
+        </span>
+        {/* Department tag */}
+        <span className="absolute right-3 top-3 rounded-full bg-black/25 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-md">
+          {departmentLabel[alumni.department]}
+        </span>
+      </div>
 
-        {/* Divider */}
-        <div className="mb-3 h-px bg-amber-200/70 dark:bg-amber-800/40" />
+      {/* ── Avatar (overlapping hero/body) ── */}
+      <div className="relative z-10 -mt-10 px-4">
+        <div className="relative inline-block">
+          {alumni.avatarUrl ? (
+            <img
+              src={alumni.avatarUrl}
+              alt={`${displayName}のプロフィール画像`}
+              className="h-20 w-20 rounded-2xl border-[3px] border-white object-cover shadow-lg transition-transform duration-300 group-hover:scale-105 dark:border-stone-900"
+            />
+          ) : (
+            <div
+              className={`flex h-20 w-20 items-center justify-center rounded-2xl border-[3px] border-white bg-gradient-to-br ${gradient} text-2xl font-extrabold text-white shadow-lg dark:border-stone-900`}
+            >
+              {initial}
+            </div>
+          )}
+          {canContact ? (
+            <span className="absolute -bottom-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 shadow-sm ring-2 ring-white dark:ring-stone-900">
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <title>連絡受付中</title>
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </span>
+          ) : null}
+        </div>
+      </div>
 
-        {/* Person info row */}
-        <div className="flex items-center gap-2.5">
-          <div
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${gradient} text-[11px] font-bold text-white shadow-sm`}
-          >
-            {initial}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-semibold text-stone-800 dark:text-stone-200">
-              {alumni.nickname ?? "匿名"}
-            </p>
-            <p className="text-[11px] text-amber-700/80 dark:text-amber-300/75">
-              {alumni.graduationYear}年卒
-            </p>
-          </div>
-          <span className="shrink-0 rounded-full border border-amber-200/80 bg-white/65 px-2 py-0.5 text-[10px] font-semibold text-amber-800 dark:border-amber-600/50 dark:bg-amber-900/40 dark:text-amber-200">
-            {departmentLabel[alumni.department]}
+      {/* ── Body ── */}
+      <div className="relative px-4 pb-4 pt-2.5">
+        {/* Name + year */}
+        <div className="flex items-baseline gap-2">
+          <h3 className="truncate text-[15px] font-bold text-stone-900 dark:text-stone-100">
+            {displayName}
+          </h3>
+          <span className="shrink-0 text-[11px] font-medium text-stone-400 dark:text-stone-500">
+            {alumni.graduationYear}年卒
           </span>
         </div>
 
-        {/* Contact & Remarks */}
-        <div className="mt-3 space-y-2">
-          {alumni.acceptContact && alumni.contactEmail ? (
+        {/* ── Company — the centerpiece ── */}
+        <div className="mt-3">
+          <p className="text-[22px] font-extrabold leading-tight tracking-tight text-stone-900 dark:text-stone-100">
+            {primaryCompany}
+          </p>
+          {otherCompanies.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {otherCompanies.slice(0, 2).map((name) => (
+                <span
+                  key={name}
+                  className="rounded-md bg-stone-100 px-1.5 py-0.5 text-[10px] font-semibold text-stone-600 dark:bg-stone-800 dark:text-stone-300"
+                >
+                  ＋ {name}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        {/* ── Remarks as personal quote ── */}
+        {alumni.remarks ? (
+          <p className="mt-3 line-clamp-2 border-l-2 border-stone-200 pl-2.5 text-[12px] leading-relaxed text-stone-500 dark:border-stone-700 dark:text-stone-400">
+            {alumni.remarks}
+          </p>
+        ) : null}
+
+        {/* ── Contact CTA ── */}
+        <div className="mt-4">
+          {canContact ? (
             <a
               href={`mailto:${alumni.contactEmail}`}
-              className="flex items-center gap-1.5 rounded-lg border border-amber-200/80 bg-amber-50/80 px-2.5 py-1.5 text-[11px] font-medium text-amber-700 transition-colors hover:bg-amber-100/80 dark:border-amber-600/40 dark:bg-amber-800/35 dark:text-amber-200 dark:hover:bg-amber-700/45"
+              className="group/cta flex w-full items-center justify-center gap-2 rounded-xl bg-stone-900 px-4 py-2.5 text-[12px] font-semibold text-white transition-all duration-200 hover:bg-stone-800 hover:shadow-lg active:scale-[0.98] dark:bg-white dark:text-stone-900 dark:hover:bg-stone-100"
             >
+              <span>この先輩に話を聞いてみる</span>
               <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
+                width="14"
+                height="14"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                className="transition-transform group-hover/cta:translate-x-0.5"
               >
-                <title>メール</title>
-                <rect width="20" height="16" x="2" y="4" rx="2" />
-                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                <title>送信</title>
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
               </svg>
-              <span className="truncate">{alumni.contactEmail}</span>
             </a>
-          ) : null}
-
-          {alumni.remarks ? (
-            <p className="line-clamp-2 rounded-lg bg-orange-50/70 px-2.5 py-1.5 text-[11px] leading-relaxed text-amber-900/75 dark:bg-orange-800/30 dark:text-amber-200/75">
-              {alumni.remarks}
-            </p>
-          ) : null}
+          ) : (
+            <div className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-stone-200 px-4 py-2.5 text-[11px] text-stone-400 dark:border-stone-800 dark:text-stone-600">
+              <span>現在は連絡を受け付けていません</span>
+            </div>
+          )}
         </div>
       </div>
-    </Card>
+    </article>
   );
 }

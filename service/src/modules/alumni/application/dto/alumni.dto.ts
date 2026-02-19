@@ -25,6 +25,7 @@ export type AlumniProfileDto = {
   companyNames: string[];
   remarks: string | null;
   contactEmail: string | null;
+  avatarUrl: string | null;
   isPublic: boolean;
   acceptContact: boolean;
   createdAt: Date;

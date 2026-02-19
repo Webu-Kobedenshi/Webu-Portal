@@ -2,6 +2,13 @@ type Query {
   health: String!
 }
 
+type UploadUrlResponse {
+  uploadUrl: String!
+  fileUrl: String!
+  key: String!
+}
+
 type Mutation {
   _noop: String
+  getUploadUrl(fileName: String!, contentType: String!): UploadUrlResponse!
 }

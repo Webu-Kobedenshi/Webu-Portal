@@ -102,6 +102,8 @@ model AlumniProfile {
 
   remarks      String? @db.Text
   contactEmail String?
+  avatarUrl    String?
+  images       AlumniImage[]
 
   isPublic      Boolean @default(true)
   acceptContact Boolean @default(true)
@@ -111,6 +113,16 @@ model AlumniProfile {
 
   // ページネーションと検索のためのインデックス
   @@index([department, createdAt(sort: Desc)])
+}
+
+model AlumniImage {
+  id              String        @id @default(cuid())
+  alumniProfileId String
+  alumniProfile   AlumniProfile @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
+  imageUrl        String
+  createdAt       DateTime      @default(now())
+
+  @@index([alumniProfileId, createdAt(sort: Desc)])
 }
 
 model AlumniCompany {

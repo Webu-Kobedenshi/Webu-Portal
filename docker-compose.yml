@@ -15,18 +15,58 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - webu-portal-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: webu-portal-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - webu-portal-network
+
+  mc:
+    image: minio/mc:latest
+    container_name: webu-portal-minio-mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c '
+      until /usr/bin/mc alias set local http://minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin}; do
+        echo "Waiting for MinIO...";
+        sleep 2;
+      done;
+      /usr/bin/mc mb -p local/${BUCKET_NAME:-webu-portal} || true;
+      /usr/bin/mc anonymous set download local/${BUCKET_NAME:-webu-portal};
+      '
+    restart: "no"
+    networks:
+      - webu-portal-network
 
   service:
     build:
       context: ./service
       dockerfile: Dockerfile
     container_name: webu-portal-service
-    command: sh -c "pnpm install && pnpm prisma generate && pnpm start:dev"
+    command: sh -c "pnpm install && pnpm prisma generate && pnpm prisma migrate deploy && pnpm start:dev"
     environment:
       NODE_ENV: development
       PORT: 4000
       DATABASE_URL: postgresql://postgres:postgres@db:5432/webu_portal?schema=public
       AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-change-this-in-env}
+      ENDPOINT: ${ENDPOINT:-http://minio:9000}
+      PUBLIC_ENDPOINT: ${PUBLIC_ENDPOINT:-http://localhost:9000}
+      ACCESS_KEY: ${ACCESS_KEY:-minioadmin}
+      SECRET_KEY: ${SECRET_KEY:-minioadmin}
+      BUCKET_NAME: ${BUCKET_NAME:-webu-portal}
     ports:
       - "4000:4000"
     volumes:
@@ -35,6 +75,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      minio:
+        condition: service_started
+    networks:
+      - webu-portal-network
 
   web:
     build:
@@ -51,6 +95,11 @@ services:
       AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-change-this-in-env}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      ENDPOINT: ${ENDPOINT:-http://minio:9000}
+      PUBLIC_ENDPOINT: ${PUBLIC_ENDPOINT:-http://localhost:9000}
+      ACCESS_KEY: ${ACCESS_KEY:-minioadmin}
+      SECRET_KEY: ${SECRET_KEY:-minioadmin}
+      BUCKET_NAME: ${BUCKET_NAME:-webu-portal}
     ports:
       - "3000:3000"
     volumes:
@@ -58,8 +107,15 @@ services:
       - web_node_modules:/app/node_modules
     depends_on:
       - service
+      - minio
+    networks:
+      - webu-portal-network
 
 volumes:
   postgres_data:
+  minio_data:
   service_node_modules:
   web_node_modules:
+
+networks:
+  webu-portal-network:

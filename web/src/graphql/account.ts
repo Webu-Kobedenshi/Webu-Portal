@@ -45,6 +45,7 @@ const getMyProfileQuery = `
         companyNames
         remarks
         contactEmail
+        avatarUrl
         isPublic
         acceptContact
         createdAt

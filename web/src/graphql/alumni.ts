@@ -18,6 +18,7 @@ const alumniListQuery = `
         id
         userId
         nickname
+        avatarUrl
         graduationYear
         department
         companyNames

@@ -33,6 +33,7 @@ export type AlumniProfile = {
   companyNames: string[];
   remarks: string | null;
   contactEmail: string | null;
+  avatarUrl: string | null;
   isPublic: boolean;
   acceptContact: boolean;
   createdAt: string;

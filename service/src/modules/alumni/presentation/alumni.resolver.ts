@@ -27,6 +27,12 @@ type UpdateAlumniProfileInput = {
   acceptContact?: boolean;
 };
 
+type UploadUrlResponse = {
+  uploadUrl: string;
+  fileUrl: string;
+  key: string;
+};
+
 @Resolver()
 @UseGuards(GqlAuthGuard)
 export class AlumniResolver {
@@ -87,5 +93,19 @@ export class AlumniResolver {
   @Mutation("deleteMyAccount")
   deleteMyAccount(@CurrentUser() user: User): Promise<boolean> {
     return this.alumniCommandService.deleteMyAccount(user.id);
+  }
+
+  @Mutation("getUploadUrl")
+  getUploadUrl(
+    @CurrentUser() user: User,
+    @Args("fileName") fileName: string,
+    @Args("contentType") contentType: string,
+  ): Promise<UploadUrlResponse> {
+    return this.alumniCommandService.getUploadUrl(user.id, fileName, contentType);
+  }
+
+  @Mutation("updateAvatar")
+  updateAvatar(@CurrentUser() user: User, @Args("url") url: string): Promise<AlumniProfileDto> {
+    return this.alumniCommandService.updateAvatar(user.id, url);
   }
 }

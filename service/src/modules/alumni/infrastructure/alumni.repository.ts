@@ -74,6 +74,7 @@ const alumniProfileForUserSelect = {
   },
   remarks: true,
   contactEmail: true,
+  avatarUrl: true,
   isPublic: true,
   acceptContact: true,
   createdAt: true,
@@ -81,7 +82,7 @@ const alumniProfileForUserSelect = {
   user: {
     select: userBaseSelect,
   },
-} satisfies Prisma.AlumniProfileSelect;
+} as Prisma.AlumniProfileSelect;
 
 const alumniProfileSelect = {
   id: true,
@@ -99,6 +100,7 @@ const alumniProfileSelect = {
   },
   remarks: true,
   contactEmail: true,
+  avatarUrl: true,
   isPublic: true,
   acceptContact: true,
   createdAt: true,
@@ -106,7 +108,7 @@ const alumniProfileSelect = {
   user: {
     select: userBaseSelect,
   },
-} satisfies Prisma.AlumniProfileSelect;
+} as Prisma.AlumniProfileSelect;
 
 const userSelect = {
   ...userBaseSelect,
@@ -156,6 +158,7 @@ export class AlumniRepository {
       companyNames: record.companies.map((item) => item.companyName),
       remarks: record.remarks,
       contactEmail: record.contactEmail,
+      avatarUrl: (record as { avatarUrl?: string | null }).avatarUrl ?? null,
       isPublic: record.isPublic,
       acceptContact: record.acceptContact,
       createdAt: record.createdAt,
@@ -177,6 +180,7 @@ export class AlumniRepository {
       companyNames: record.companies.map((item) => item.companyName),
       remarks: record.remarks,
       contactEmail: record.contactEmail,
+      avatarUrl: (record as { avatarUrl?: string | null }).avatarUrl ?? null,
       isPublic: record.isPublic,
       acceptContact: record.acceptContact,
       createdAt: record.createdAt,
@@ -363,6 +367,25 @@ export class AlumniRepository {
     if (!record) {
       throw new Error("Failed to load updated alumni profile");
     }
+
+    return this.toAlumniProfileDto(record);
+  }
+
+  async updateAvatarUrl(userId: string, avatarUrl: string): Promise<AlumniProfileDto | null> {
+    const profile = await this.prisma.alumniProfile.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!profile) {
+      return null;
+    }
+
+    const record = await this.prisma.alumniProfile.update({
+      where: { id: profile.id },
+      data: { avatarUrl } as Prisma.AlumniProfileUncheckedUpdateInput,
+      select: alumniProfileSelect,
+    });
 
     return this.toAlumniProfileDto(record);
   }

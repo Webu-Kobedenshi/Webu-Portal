@@ -59,6 +59,7 @@ type AlumniProfile {
   companyNames: [String!]!
   remarks: String
   contactEmail: String
+  avatarUrl: String
   isPublic: Boolean!
   acceptContact: Boolean!
   user: User!
@@ -105,5 +106,6 @@ extend type Query {
 extend type Mutation {
   updateInitialSettings(input: InitialSettingsInput!): User!
   updateAlumniProfile(input: UpdateAlumniProfileInput!): AlumniProfile!
+  updateAvatar(url: String!): AlumniProfile!
   deleteMyAccount: Boolean!
 }
