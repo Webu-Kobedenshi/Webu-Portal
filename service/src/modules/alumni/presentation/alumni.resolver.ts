@@ -27,12 +27,14 @@ export class AlumniResolver {
   getAlumniList(
     @Args("department", { nullable: true }) department?: Department,
     @Args("company", { nullable: true }) company?: string,
+    @Args("graduationYear", { nullable: true }) graduationYear?: number,
     @Args("limit") limit?: number,
     @Args("offset") offset?: number,
   ): Promise<AlumniConnectionDto> {
     return this.alumniQueryService.getAlumniList({
       department,
       company,
+      graduationYear,
       limit: limit ?? 20,
       offset: offset ?? 0,
     });

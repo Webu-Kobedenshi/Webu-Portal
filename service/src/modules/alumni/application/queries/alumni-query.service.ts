@@ -11,6 +11,7 @@ export class AlumniQueryService {
   getAlumniList(params: {
     department?: Department;
     company?: string;
+    graduationYear?: number;
     limit: number;
     offset: number;
   }): Promise<AlumniConnectionDto> {

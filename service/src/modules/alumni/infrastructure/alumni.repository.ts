@@ -135,13 +135,15 @@ export class AlumniRepository {
   async findPublicList(params: {
     department?: Department;
     company?: string;
+    graduationYear?: number;
     limit: number;
     offset: number;
   }): Promise<AlumniConnection> {
-    const { department, company, limit, offset } = params;
+    const { department, company, graduationYear, limit, offset } = params;
     const where: Prisma.AlumniProfileWhereInput = {
       isPublic: true,
       ...(department ? { department: this.toPrismaDepartment(department) } : {}),
+      ...(graduationYear ? { graduationYear } : {}),
       ...(company
         ? {
             companies: {

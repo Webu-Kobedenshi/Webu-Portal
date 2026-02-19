@@ -41,12 +41,21 @@ export default async function Home({ searchParams }: PageProps) {
   const params: Record<string, string | string[] | undefined> = (await searchParams) ?? {};
   const departmentParam = params.department;
   const companyParam = params.company;
+  const graduationYearParam = params.graduationYear;
   const pageParam = params.page;
   const pageSizeParam = params.pageSize;
 
   const department =
     (Array.isArray(departmentParam) ? departmentParam[0] : departmentParam)?.trim() ?? "";
   const company = (Array.isArray(companyParam) ? companyParam[0] : companyParam)?.trim() ?? "";
+  const graduationYearRaw =
+    (Array.isArray(graduationYearParam) ? graduationYearParam[0] : graduationYearParam)?.trim() ??
+    "";
+  const parsedGraduationYear = Number(graduationYearRaw);
+  const graduationYear =
+    Number.isInteger(parsedGraduationYear) && parsedGraduationYear >= 1900
+      ? parsedGraduationYear
+      : undefined;
 
   const parsedPage = Number((Array.isArray(pageParam) ? pageParam[0] : pageParam)?.trim() ?? "1");
   const currentPage = Number.isFinite(parsedPage) && parsedPage > 0 ? Math.floor(parsedPage) : 1;
@@ -59,6 +68,7 @@ export default async function Home({ searchParams }: PageProps) {
   const { alumniList, totalCount, hasNextPage, error } = await fetchAlumniList({
     department: department || undefined,
     company: company || undefined,
+    graduationYear,
     limit: pageSize,
     offset,
   });
@@ -75,6 +85,7 @@ export default async function Home({ searchParams }: PageProps) {
       alumni={alumniList}
       initialDepartment={department}
       initialCompany={company}
+      initialGraduationYear={graduationYear ? String(graduationYear) : ""}
       totalCount={totalCount}
       currentPage={currentPage}
       pageSize={pageSize}

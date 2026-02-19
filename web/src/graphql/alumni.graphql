@@ -1,5 +1,17 @@
-query GetAlumniList($department: Department, $limit: Int!, $offset: Int!) {
-  getAlumniList(department: $department, limit: $limit, offset: $offset) {
+query GetAlumniList(
+  $department: Department
+  $company: String
+  $graduationYear: Int
+  $limit: Int!
+  $offset: Int!
+) {
+  getAlumniList(
+    department: $department
+    company: $company
+    graduationYear: $graduationYear
+    limit: $limit
+    offset: $offset
+  ) {
     items {
       id
       userId

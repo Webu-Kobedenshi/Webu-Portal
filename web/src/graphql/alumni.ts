@@ -12,8 +12,20 @@ type GraphQlResponse<TData> = {
 };
 
 const alumniListQuery = `
-  query GetAlumniList($department: Department, $company: String, $limit: Int!, $offset: Int!) {
-    getAlumniList(department: $department, company: $company, limit: $limit, offset: $offset) {
+  query GetAlumniList(
+    $department: Department
+    $company: String
+    $graduationYear: Int
+    $limit: Int!
+    $offset: Int!
+  ) {
+    getAlumniList(
+      department: $department
+      company: $company
+      graduationYear: $graduationYear
+      limit: $limit
+      offset: $offset
+    ) {
       items {
         id
         userId
@@ -38,6 +50,7 @@ const alumniListQuery = `
 export async function fetchAlumniList(params: {
   department?: string;
   company?: string;
+  graduationYear?: number;
   limit?: number;
   offset?: number;
 }) {
@@ -69,6 +82,7 @@ export async function fetchAlumniList(params: {
         variables: {
           department: params.department as Department | undefined,
           company: params.company,
+          graduationYear: params.graduationYear,
           limit,
           offset,
         },

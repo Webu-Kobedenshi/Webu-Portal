@@ -9,22 +9,25 @@ import { useEffect, useMemo, useState } from "react";
 type SearchFieldProps = {
   initialDepartment: string;
   initialCompany: string;
+  initialGraduationYear: string;
   initialPageSize: number;
 };
 
 export function SearchField({
   initialDepartment,
   initialCompany,
+  initialGraduationYear,
   initialPageSize,
 }: SearchFieldProps) {
   const router = useRouter();
   const pathname = usePathname();
 
   const [department, setDepartment] = useState(initialDepartment || "");
+  const [graduationYear, setGraduationYear] = useState(initialGraduationYear || "");
   const [pageSize, setPageSize] = useState(String(initialPageSize));
   const [companyInput, setCompanyInput] = useState(initialCompany);
   const [company, setCompany] = useState(initialCompany);
-  const canReset = Boolean(department || companyInput || pageSize !== "20");
+  const canReset = Boolean(department || companyInput || graduationYear || pageSize !== "20");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -45,13 +48,17 @@ export function SearchField({
       query.set("company", company);
     }
 
+    if (graduationYear) {
+      query.set("graduationYear", graduationYear);
+    }
+
     if (pageSize !== "20") {
       query.set("pageSize", pageSize);
     }
 
     const serialized = query.toString();
     return serialized ? `${pathname}?${serialized}` : pathname;
-  }, [company, department, pageSize, pathname]);
+  }, [company, department, graduationYear, pageSize, pathname]);
 
   useEffect(() => {
     router.replace(nextHref, { scroll: false });
@@ -61,13 +68,14 @@ export function SearchField({
     setDepartment("");
     setCompanyInput("");
     setCompany("");
+    setGraduationYear("");
     setPageSize("20");
     router.replace(pathname, { scroll: false });
   };
 
   return (
     <form className="liquid-glass rounded-2xl p-4" onSubmit={(event) => event.preventDefault()}>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_120px_auto]">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_120px_auto]">
         <label htmlFor="search-department" className="space-y-1.5">
           <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
             学科で絞り込む
@@ -102,6 +110,23 @@ export function SearchField({
             <option value="INTERNATIONAL_COMM">国際コミュニケーション</option>
             <option value="OTHERS">その他</option>
           </Select>
+        </label>
+
+        <label htmlFor="search-graduation-year" className="space-y-1.5">
+          <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+            卒業年度で絞り込む
+          </span>
+          <Input
+            id="search-graduation-year"
+            name="graduationYear"
+            type="number"
+            inputMode="numeric"
+            min={1900}
+            max={2100}
+            value={graduationYear}
+            onChange={(event) => setGraduationYear(event.target.value.trim())}
+            placeholder="例: 2026"
+          />
         </label>
 
         <label htmlFor="search-company" className="space-y-1.5">

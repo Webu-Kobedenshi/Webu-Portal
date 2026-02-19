@@ -96,6 +96,7 @@ extend type Query {
   getAlumniList(
     department: Department
     company: String
+    graduationYear: Int
     limit: Int!
     offset: Int!
   ): AlumniConnection!

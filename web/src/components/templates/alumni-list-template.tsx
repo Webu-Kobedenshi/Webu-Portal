@@ -9,6 +9,7 @@ type AlumniListTemplateProps = {
   alumni: AlumniProfile[];
   initialDepartment: string;
   initialCompany: string;
+  initialGraduationYear: string;
   totalCount: number;
   currentPage: number;
   pageSize: number;
@@ -21,6 +22,7 @@ export function AlumniListTemplate({
   alumni,
   initialDepartment,
   initialCompany,
+  initialGraduationYear,
   totalCount,
   currentPage,
   pageSize,
@@ -39,6 +41,9 @@ export function AlumniListTemplate({
     }
     if (initialCompany) {
       query.set("company", initialCompany);
+    }
+    if (initialGraduationYear) {
+      query.set("graduationYear", initialGraduationYear);
     }
     if (pageSize !== 20) {
       query.set("pageSize", String(pageSize));
@@ -79,6 +84,7 @@ export function AlumniListTemplate({
         <SearchField
           initialDepartment={initialDepartment}
           initialCompany={initialCompany}
+          initialGraduationYear={initialGraduationYear}
           initialPageSize={pageSize}
         />
       </section>
@@ -96,6 +102,9 @@ export function AlumniListTemplate({
         ) : (
           <Badge variant="secondary">全学科</Badge>
         )}
+        {initialGraduationYear ? (
+          <Badge variant="default">卒業年度: {initialGraduationYear}</Badge>
+        ) : null}
         {initialCompany ? <Badge variant="default">企業: {initialCompany}</Badge> : null}
         <Link
           href="/account"
