@@ -1,6 +1,10 @@
+"use client";
+
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { Select } from "@/components/atoms/select";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 type SearchFieldProps = {
   initialDepartment: string;
@@ -13,14 +17,67 @@ export function SearchField({
   initialCompany,
   initialPageSize,
 }: SearchFieldProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const [department, setDepartment] = useState(initialDepartment || "");
+  const [pageSize, setPageSize] = useState(String(initialPageSize));
+  const [companyInput, setCompanyInput] = useState(initialCompany);
+  const [company, setCompany] = useState(initialCompany);
+  const canReset = Boolean(department || companyInput || pageSize !== "20");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCompany(companyInput.trim());
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [companyInput]);
+
+  const nextHref = useMemo(() => {
+    const query = new URLSearchParams();
+
+    if (department) {
+      query.set("department", department);
+    }
+
+    if (company) {
+      query.set("company", company);
+    }
+
+    if (pageSize !== "20") {
+      query.set("pageSize", pageSize);
+    }
+
+    const serialized = query.toString();
+    return serialized ? `${pathname}?${serialized}` : pathname;
+  }, [company, department, pageSize, pathname]);
+
+  useEffect(() => {
+    router.replace(nextHref, { scroll: false });
+  }, [nextHref, router]);
+
+  const handleReset = () => {
+    setDepartment("");
+    setCompanyInput("");
+    setCompany("");
+    setPageSize("20");
+    router.replace(pathname, { scroll: false });
+  };
+
   return (
-    <form className="liquid-glass rounded-2xl p-4" method="get">
+    <form className="liquid-glass rounded-2xl p-4" onSubmit={(event) => event.preventDefault()}>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_120px_auto]">
         <label htmlFor="search-department" className="space-y-1.5">
           <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
             学科で絞り込む
           </span>
-          <Select id="search-department" name="department" defaultValue={initialDepartment || ""}>
+          <Select
+            id="search-department"
+            name="department"
+            value={department}
+            onChange={(event) => setDepartment(event.target.value)}
+          >
             <option value="">すべての学科</option>
             <option value="IT_EXPERT">ITエキスパート</option>
             <option value="IT_SPECIALIST">ITスペシャリスト</option>
@@ -54,7 +111,8 @@ export function SearchField({
           <Input
             id="search-company"
             name="company"
-            defaultValue={initialCompany}
+            value={companyInput}
+            onChange={(event) => setCompanyInput(event.target.value)}
             placeholder="例: 株式会社○○"
           />
         </label>
@@ -63,16 +121,26 @@ export function SearchField({
           <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
             表示件数
           </span>
-          <Select id="search-page-size" name="pageSize" defaultValue={String(initialPageSize)}>
+          <Select
+            id="search-page-size"
+            name="pageSize"
+            value={pageSize}
+            onChange={(event) => setPageSize(event.target.value)}
+          >
             <option value="10">10件</option>
             <option value="20">20件</option>
             <option value="50">50件</option>
           </Select>
         </label>
 
-        <div className="flex items-end gap-2">
-          <Button type="submit" className="w-full sm:w-auto">
-            検索
+        <div className="flex items-end">
+          <Button
+            type="button"
+            onClick={handleReset}
+            disabled={!canReset}
+            className="w-full bg-stone-200 text-stone-800 hover:bg-stone-300 disabled:opacity-50 dark:bg-stone-700 dark:text-stone-100 dark:hover:bg-stone-600"
+          >
+            リセット
           </Button>
         </div>
       </div>

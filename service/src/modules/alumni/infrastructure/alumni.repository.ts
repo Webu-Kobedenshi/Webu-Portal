@@ -216,7 +216,7 @@ export class AlumniRepository {
       this.prisma.alumniProfile.findMany({
         where,
         select: alumniProfileSelect,
-        orderBy: [{ createdAt: "desc" }],
+        orderBy: [{ graduationYear: "desc" }, { createdAt: "desc" }],
         skip: offset,
         take: limit,
       }),
