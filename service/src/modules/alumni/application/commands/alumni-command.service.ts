@@ -1,35 +1,14 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { resolveProfileVisibility } from "../../domain/alumni-profile-policy";
-import type { Department } from "../../domain/types/department";
 import { resolveRoleAndStatus } from "../../domain/user-role-transition";
 import { AlumniRepository } from "../../infrastructure/alumni.repository";
 import { StorageService } from "../../infrastructure/storage.service";
 import type { AlumniProfileDto, UserDto } from "../dto/alumni.dto";
-
-type UploadUrlResponse = {
-  uploadUrl: string;
-  fileUrl: string;
-  key: string;
-};
-
-type InitialSettingsInput = {
-  name: string;
-  studentId: string;
-  enrollmentYear: number;
-  durationYears: number;
-  department: Department;
-};
-
-type UpdateAlumniProfileInput = {
-  nickname?: string;
-  graduationYear: number;
-  department: Department;
-  companyNames: string[];
-  remarks?: string;
-  contactEmail?: string;
-  isPublic?: boolean;
-  acceptContact?: boolean;
-};
+import type {
+  InitialSettingsInput,
+  UpdateAlumniProfileInput,
+  UploadUrlResponse,
+} from "../dto/alumni.input";
 
 @Injectable()
 export class AlumniCommandService {

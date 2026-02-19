@@ -99,33 +99,26 @@ export function AccountProfileForm({
   description = "初期設定で入力した項目を更新できます。公開する内定先情報もここで管理します。",
   showPublicProfileFields = true,
 }: AccountProfileFormProps) {
-  const initialCompanyNames = initialProfile?.alumniProfile?.companyNames
-    ?.length
+  const initialCompanyNames = initialProfile?.alumniProfile?.companyNames?.length
     ? [...initialProfile.alumniProfile.companyNames]
     : [];
   const initialAvatarUrl = initialProfile?.alumniProfile?.avatarUrl ?? null;
   const initialIsPublic =
-    (initialProfile?.alumniProfile?.isPublic ?? false) &&
-    initialCompanyNames.length > 0;
+    (initialProfile?.alumniProfile?.isPublic ?? false) && initialCompanyNames.length > 0;
 
   const [state, setState] = useState<AccountProfileFormState>({
     ...defaultState,
     name: initialProfile?.name ?? initialName ?? "",
     studentId: initialProfile?.studentId ?? "",
-    enrollmentYear: initialProfile?.enrollmentYear
-      ? String(initialProfile.enrollmentYear)
-      : "",
+    enrollmentYear: initialProfile?.enrollmentYear ? String(initialProfile.enrollmentYear) : "",
     durationYears: initialProfile?.durationYears
-      ? (String(
-          initialProfile.durationYears,
-        ) as AccountProfileFormState["durationYears"])
+      ? (String(initialProfile.durationYears) as AccountProfileFormState["durationYears"])
       : "",
     department: initialProfile?.department ?? "",
     nickname: initialProfile?.alumniProfile?.nickname ?? initialName ?? "",
     companyNames: initialCompanyNames,
     remarks: initialProfile?.alumniProfile?.remarks ?? "",
-    contactEmail:
-      initialProfile?.alumniProfile?.contactEmail ?? initialEmail ?? "",
+    contactEmail: initialProfile?.alumniProfile?.contactEmail ?? initialEmail ?? "",
     isPublic: initialIsPublic,
     acceptContact: initialProfile?.alumniProfile?.acceptContact ?? false,
   });
@@ -133,16 +126,12 @@ export function AccountProfileForm({
     initialCompanyNames.map(() => createRowId()),
   );
   const [avatarUrl, setAvatarUrl] = useState<string | null>(initialAvatarUrl);
-  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(
-    null,
-  );
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
   const avatarFileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState("");
   const [avatarMessage, setAvatarMessage] = useState("");
-  const [hasAlumniProfile, setHasAlumniProfile] = useState(
-    Boolean(initialProfile?.alumniProfile),
-  );
+  const [hasAlumniProfile, setHasAlumniProfile] = useState(Boolean(initialProfile?.alumniProfile));
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string>("");
   const [error, setError] = useState<string>("");
@@ -186,23 +175,17 @@ export function AccountProfileForm({
   };
 
   const removeCompanyNameField = (index: number) => {
-    setCompanyRowIds((prev) =>
-      prev.filter((_, itemIndex) => itemIndex !== index),
-    );
+    setCompanyRowIds((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
 
     setState((prev) => ({
       ...prev,
-      companyNames: prev.companyNames.filter(
-        (_, itemIndex) => itemIndex !== index,
-      ),
+      companyNames: prev.companyNames.filter((_, itemIndex) => itemIndex !== index),
       isPublic:
-        prev.companyNames.filter((_, itemIndex) => itemIndex !== index).length >
-        0
+        prev.companyNames.filter((_, itemIndex) => itemIndex !== index).length > 0
           ? prev.isPublic
           : false,
       acceptContact:
-        prev.companyNames.filter((_, itemIndex) => itemIndex !== index).length >
-        0
+        prev.companyNames.filter((_, itemIndex) => itemIndex !== index).length > 0
           ? prev.acceptContact
           : false,
     }));
@@ -231,21 +214,12 @@ export function AccountProfileForm({
     }
 
     const normalizedCompanyNames = Array.from(
-      new Set(
-        state.companyNames
-          .map((item) => item.trim())
-          .filter((item) => item.length > 0),
-      ),
+      new Set(state.companyNames.map((item) => item.trim()).filter((item) => item.length > 0)),
     );
-    const normalizedContactEmail =
-      state.contactEmail.trim() || (initialEmail?.trim() ?? "");
+    const normalizedContactEmail = state.contactEmail.trim() || (initialEmail?.trim() ?? "");
     const isPublicToSave = forcePrivate ? false : state.isPublic;
 
-    if (
-      showPublicProfileFields &&
-      isPublicToSave &&
-      normalizedCompanyNames.length === 0
-    ) {
+    if (showPublicProfileFields && isPublicToSave && normalizedCompanyNames.length === 0) {
       const msg = "公開する場合は内定先・勤務先を1件以上入力してください。";
       if (silent) {
         setAvatarError(msg);
@@ -296,9 +270,7 @@ export function AccountProfileForm({
         if (!showPublicProfileFields) {
           setMessage("保存しました。初期情報を更新しました。");
         } else if (json.alumniUpdated) {
-          setMessage(
-            "保存しました。初期情報と公開プロフィールを更新しました。",
-          );
+          setMessage("保存しました。初期情報と公開プロフィールを更新しました。");
         } else {
           setMessage("保存しました。初期情報を更新しました。");
         }
@@ -306,10 +278,7 @@ export function AccountProfileForm({
 
       return true;
     } catch (submitError) {
-      const msg =
-        submitError instanceof Error
-          ? submitError.message
-          : "更新に失敗しました";
+      const msg = submitError instanceof Error ? submitError.message : "更新に失敗しました";
       if (silent) {
         setAvatarError(msg);
       } else {
@@ -374,9 +343,7 @@ export function AccountProfileForm({
         !uploadUrlJson.uploadUrl ||
         !uploadUrlJson.fileUrl
       ) {
-        throw new Error(
-          uploadUrlJson.message || "アップロードURLの取得に失敗しました",
-        );
+        throw new Error(uploadUrlJson.message || "アップロードURLの取得に失敗しました");
       }
 
       const putResponse = await fetch(uploadUrlJson.uploadUrl, {
@@ -419,9 +386,7 @@ export function AccountProfileForm({
       setAvatarMessage("プロフィール画像を更新しました。");
     } catch (uploadError) {
       setAvatarError(
-        uploadError instanceof Error
-          ? uploadError.message
-          : "画像アップロードに失敗しました",
+        uploadError instanceof Error ? uploadError.message : "画像アップロードに失敗しました",
       );
     } finally {
       setIsUploadingAvatar(false);
@@ -450,9 +415,7 @@ export function AccountProfileForm({
               <circle cx="12" cy="7" r="4" />
             </svg>
           </span>
-          <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-            基本情報
-          </h3>
+          <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">基本情報</h3>
           <span className="ml-auto rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
             必須
           </span>
@@ -492,9 +455,7 @@ export function AccountProfileForm({
             <Input
               id="profile-enrollment-year"
               value={state.enrollmentYear}
-              onChange={(event) =>
-                setField("enrollmentYear", event.target.value)
-              }
+              onChange={(event) => setField("enrollmentYear", event.target.value)}
               placeholder="例: 2024"
               inputMode="numeric"
               required
@@ -511,8 +472,7 @@ export function AccountProfileForm({
               onChange={(event) =>
                 setField(
                   "durationYears",
-                  event.target
-                    .value as AccountProfileFormState["durationYears"],
+                  event.target.value as AccountProfileFormState["durationYears"],
                 )
               }
               required
@@ -532,10 +492,7 @@ export function AccountProfileForm({
               id="profile-department"
               value={state.department}
               onChange={(event) =>
-                setField(
-                  "department",
-                  event.target.value as AccountProfileFormState["department"],
-                )
+                setField("department", event.target.value as AccountProfileFormState["department"])
               }
               required
             >
@@ -597,9 +554,7 @@ export function AccountProfileForm({
                   id="profile-avatar-file"
                   type="file"
                   accept="image/*"
-                  onChange={(event) =>
-                    setSelectedAvatarFile(event.target.files?.[0] ?? null)
-                  }
+                  onChange={(event) => setSelectedAvatarFile(event.target.files?.[0] ?? null)}
                   disabled={isUploadingAvatar}
                   className="sr-only"
                 />
@@ -661,9 +616,7 @@ export function AccountProfileForm({
                   <circle cx="12" cy="12" r="3" />
                 </svg>
               </span>
-              <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                公開設定
-              </h3>
+              <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">公開設定</h3>
             </div>
 
             <div className="mt-4 space-y-4">
@@ -706,9 +659,7 @@ export function AccountProfileForm({
                   <Input
                     id="profile-nickname"
                     value={state.nickname}
-                    onChange={(event) =>
-                      setField("nickname", event.target.value)
-                    }
+                    onChange={(event) => setField("nickname", event.target.value)}
                     placeholder="例: たろう"
                     disabled={!canEditAlumniProfile}
                   />
@@ -721,9 +672,7 @@ export function AccountProfileForm({
                   <Input
                     id="profile-contact-email"
                     value={state.contactEmail}
-                    onChange={(event) =>
-                      setField("contactEmail", event.target.value)
-                    }
+                    onChange={(event) => setField("contactEmail", event.target.value)}
                     placeholder="example@st.kobedenshi.ac.jp"
                     type="email"
                     disabled={!canEditAlumniProfile}
@@ -737,9 +686,7 @@ export function AccountProfileForm({
                   <input
                     type="checkbox"
                     checked={state.acceptContact}
-                    onChange={(event) =>
-                      setField("acceptContact", event.target.checked)
-                    }
+                    onChange={(event) => setField("acceptContact", event.target.checked)}
                     disabled={!canEditAlumniProfile}
                     className="peer sr-only"
                   />
@@ -798,18 +745,13 @@ export function AccountProfileForm({
                 </div>
               ) : null}
               {state.companyNames.map((companyName, index) => (
-                <div
-                  key={companyRowIds[index]}
-                  className="flex items-center gap-2"
-                >
+                <div key={companyRowIds[index]} className="flex items-center gap-2">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-xs font-bold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
                     {index + 1}
                   </div>
                   <Input
                     value={companyName}
-                    onChange={(event) =>
-                      setCompanyNameAt(index, event.target.value)
-                    }
+                    onChange={(event) => setCompanyNameAt(index, event.target.value)}
                     placeholder="例: 株式会社○○"
                     disabled={!canEditAlumniProfile}
                   />

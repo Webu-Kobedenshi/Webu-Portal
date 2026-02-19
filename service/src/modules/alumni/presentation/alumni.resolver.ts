@@ -5,33 +5,13 @@ import { CurrentUser } from "../../../common/auth/current-user.decorator";
 import { GqlAuthGuard } from "../../../common/auth/gql-auth.guard";
 import { AlumniCommandService } from "../application/commands/alumni-command.service";
 import type { AlumniConnectionDto, AlumniProfileDto, UserDto } from "../application/dto/alumni.dto";
+import type {
+  InitialSettingsInput,
+  UpdateAlumniProfileInput,
+  UploadUrlResponse,
+} from "../application/dto/alumni.input";
 import { AlumniQueryService } from "../application/queries/alumni-query.service";
 import type { Department } from "../domain/types/department";
-
-type InitialSettingsInput = {
-  name: string;
-  studentId: string;
-  enrollmentYear: number;
-  durationYears: number;
-  department: Department;
-};
-
-type UpdateAlumniProfileInput = {
-  nickname?: string;
-  graduationYear: number;
-  department: Department;
-  companyNames: string[];
-  remarks?: string;
-  contactEmail?: string;
-  isPublic?: boolean;
-  acceptContact?: boolean;
-};
-
-type UploadUrlResponse = {
-  uploadUrl: string;
-  fileUrl: string;
-  key: string;
-};
 
 @Resolver()
 @UseGuards(GqlAuthGuard)

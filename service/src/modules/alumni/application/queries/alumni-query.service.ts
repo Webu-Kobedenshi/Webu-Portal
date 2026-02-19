@@ -22,22 +22,26 @@ export class AlumniQueryService {
   }
 
   async getMyProfile(userId: string): Promise<UserDto | null> {
-    const snapshot = await this.alumniRepository.findUserRoleStatusSnapshot(userId);
-    if (!snapshot) {
+    const profile = await this.alumniRepository.findUserById(userId);
+    if (!profile) {
       return null;
     }
 
-    if (snapshot.enrollmentYear && snapshot.durationYears) {
+    if (profile.enrollmentYear && profile.durationYears) {
       const resolved = resolveRoleAndStatus({
-        enrollmentYear: snapshot.enrollmentYear,
-        durationYears: snapshot.durationYears,
+        enrollmentYear: profile.enrollmentYear,
+        durationYears: profile.durationYears,
       });
 
-      if (snapshot.role !== resolved.role || snapshot.status !== resolved.status) {
-        await this.alumniRepository.updateRoleAndStatus(userId, resolved.role, resolved.status);
+      if (profile.role !== resolved.role || profile.status !== resolved.status) {
+        return {
+          ...profile,
+          role: resolved.role,
+          status: resolved.status,
+        };
       }
     }
 
-    return this.alumniRepository.findUserById(userId);
+    return profile;
   }
 }

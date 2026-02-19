@@ -20,13 +20,6 @@ type InitialSettingsInput = {
   status: UserStatus;
 };
 
-type UserRoleStatusSnapshot = {
-  role: UserRole;
-  status: UserStatus;
-  enrollmentYear: number | null;
-  durationYears: number | null;
-};
-
 type UpdateAlumniProfileInput = {
   nickname?: string;
   graduationYear: number;
@@ -58,32 +51,6 @@ const userBaseSelect = {
   updatedAt: true,
 } satisfies Prisma.UserSelect;
 
-const alumniProfileForUserSelect = {
-  id: true,
-  userId: true,
-  nickname: true,
-  graduationYear: true,
-  department: true,
-  companies: {
-    select: {
-      companyName: true,
-    },
-    orderBy: {
-      createdAt: "asc",
-    },
-  },
-  remarks: true,
-  contactEmail: true,
-  avatarUrl: true,
-  isPublic: true,
-  acceptContact: true,
-  createdAt: true,
-  updatedAt: true,
-  user: {
-    select: userBaseSelect,
-  },
-} as Prisma.AlumniProfileSelect;
-
 const alumniProfileSelect = {
   id: true,
   userId: true,
@@ -113,14 +80,11 @@ const alumniProfileSelect = {
 const userSelect = {
   ...userBaseSelect,
   alumniProfile: {
-    select: alumniProfileForUserSelect,
+    select: alumniProfileSelect,
   },
 } satisfies Prisma.UserSelect;
 
 type AlumniProfileRecord = Prisma.AlumniProfileGetPayload<{ select: typeof alumniProfileSelect }>;
-type AlumniProfileForUserRecord = Prisma.AlumniProfileGetPayload<{
-  select: typeof alumniProfileForUserSelect;
-}>;
 type UserRecord = Prisma.UserGetPayload<{ select: typeof userSelect }>;
 
 @Injectable()
@@ -142,31 +106,7 @@ export class AlumniRepository {
   private toUserDto(record: UserRecord): UserDto {
     return {
       ...record,
-      alumniProfile: record.alumniProfile
-        ? this.toAlumniProfileForUserDto(record.alumniProfile)
-        : null,
-    };
-  }
-
-  private toAlumniProfileForUserDto(record: AlumniProfileForUserRecord): AlumniProfileDto {
-    return {
-      id: record.id,
-      userId: record.userId,
-      nickname: record.nickname,
-      graduationYear: record.graduationYear,
-      department: record.department as Department,
-      companyNames: record.companies.map((item) => item.companyName),
-      remarks: record.remarks,
-      contactEmail: record.contactEmail,
-      avatarUrl: (record as { avatarUrl?: string | null }).avatarUrl ?? null,
-      isPublic: record.isPublic,
-      acceptContact: record.acceptContact,
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
-      user: {
-        ...record.user,
-        department: record.user.department as Department | null,
-      },
+      alumniProfile: record.alumniProfile ? this.toAlumniProfileDto(record.alumniProfile) : null,
     };
   }
 
@@ -253,31 +193,6 @@ export class AlumniRepository {
     });
 
     return record ? this.toUserDto(record) : null;
-  }
-
-  findUserRoleStatusSnapshot(userId: string): Promise<UserRoleStatusSnapshot | null> {
-    return this.prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        role: true,
-        status: true,
-        enrollmentYear: true,
-        durationYears: true,
-      },
-    });
-  }
-
-  async updateRoleAndStatus(userId: string, role: UserRole, status: UserStatus): Promise<UserDto> {
-    const record = await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        role: this.toPrismaRole(role),
-        status: this.toPrismaUserStatus(status),
-      },
-      select: userSelect,
-    });
-
-    return this.toUserDto(record);
   }
 
   async updateInitialSettings(userId: string, input: InitialSettingsInput): Promise<UserDto> {
