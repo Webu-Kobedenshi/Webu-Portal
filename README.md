@@ -5,6 +5,7 @@ Next.js(App Router) + NestJS(GraphQL schema-first) + PostgreSQL(Prisma) を Dock
 詳細は Docs 配下を参照してください。
 
 - [Docs/STATUS.md](./Docs/STATUS.md): 現在の開発進捗
+- [Docs/GIT_WORKFLOW.md](./Docs/GIT_WORKFLOW.md): ブランチ戦略と運用フロー
 - [Docs/TECH_STACK.md](./Docs/TECH_STACK.md): 技術スタック（最新版）
 - [Docs/Architecture.md](./Docs/Architecture.md): アーキテクチャ定義
 - [Docs/OPERATIONS_SPEC.md](./Docs/OPERATIONS_SPEC.md): 運用仕様
