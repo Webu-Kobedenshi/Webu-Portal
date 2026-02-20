@@ -65,7 +65,9 @@ export class StorageService {
       const hostHasBucket = url.hostname.startsWith(`${this.bucketName}.`);
       const pathHasBucket = path === this.bucketName || path.endsWith(`/${this.bucketName}`);
 
-      if (hostHasBucket || pathHasBucket) {
+      const isR2PublicDev = url.hostname.endsWith(".r2.dev");
+
+      if (hostHasBucket || pathHasBucket || isR2PublicDev) {
         return endpoint;
       }
 
