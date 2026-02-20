@@ -8,8 +8,8 @@ primary_region = "iad"
   release_command = "/app/service/node_modules/.bin/prisma migrate deploy --schema /app/service/prisma/schema.prisma"
 
   [deploy.release_command_vm]
-    size = "shared-cpu-1x"
-    memory = "1gb"
+    size = "shared-cpu-2x"
+    memory = "2gb"
 
 [env]
   NODE_ENV = "production"
