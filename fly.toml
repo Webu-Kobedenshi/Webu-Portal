@@ -1,0 +1,25 @@
+app = "webu-portal-service-rion0910"
+primary_region = "iad"
+
+[build]
+  dockerfile = "service/Dockerfile.fly"
+
+[deploy]
+  release_command = "pnpm prisma migrate deploy"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "4000"
+
+[http_service]
+  internal_port = 4000
+  force_https = true
+  auto_start_machines = true
+  auto_stop_machines = "off"
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 50
+    hard_limit = 100

@@ -10,6 +10,10 @@ Next.js(App Router) + NestJS(GraphQL schema-first) + PostgreSQL(Prisma) を Dock
 - [Docs/Architecture.md](./Docs/Architecture.md): アーキテクチャ定義
 - [Docs/OPERATIONS_SPEC.md](./Docs/OPERATIONS_SPEC.md): 運用仕様
 - [Docs/PRD.md](./Docs/PRD.md): 要件定義（プロダクト視点）
+- [Docs/DEPLOY_FREE_TIER.md](./Docs/DEPLOY_FREE_TIER.md): 無料枠優先デプロイ手順（Cloudflare + Render + Neon + R2）
+- [Docs/DEPLOY_FLYIO.md](./Docs/DEPLOY_FLYIO.md): Fly.io デプロイ手順（service）
+- [Docs/DEPLOY_NEON.md](./Docs/DEPLOY_NEON.md): Neon（PostgreSQL）設定手順
+- [Docs/DEPLOY_R2.md](./Docs/DEPLOY_R2.md): Cloudflare R2 設定手順
 
 ## 構成
 
