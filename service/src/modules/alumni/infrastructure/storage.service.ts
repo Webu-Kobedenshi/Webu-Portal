@@ -31,8 +31,10 @@ export class StorageService {
 
     this.s3Client = new S3Client({
       region: "us-east-1",
-      endpoint: this.publicEndpoint,
+      endpoint: this.endpoint,
       forcePathStyle: true,
+      requestChecksumCalculation: "WHEN_REQUIRED",
+      responseChecksumValidation: "WHEN_REQUIRED",
       credentials: {
         accessKeyId: this.accessKey,
         secretAccessKey: this.secretKey,
