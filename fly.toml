@@ -5,7 +5,7 @@ primary_region = "iad"
   dockerfile = "service/Dockerfile.fly"
 
 [deploy]
-  release_command = "cd /app/service && pnpm exec prisma migrate deploy"
+  release_command = "cd /app/service && ./node_modules/.bin/prisma migrate deploy"
 
   [deploy.release_command_vm]
     size = "shared-cpu-1x"
