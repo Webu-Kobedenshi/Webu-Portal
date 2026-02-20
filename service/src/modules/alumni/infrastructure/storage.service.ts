@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Injectable } from "@nestjs/common";
 
@@ -103,5 +103,29 @@ export class StorageService {
       fileUrl: this.toPublicFileUrl(key),
       key,
     };
+  }
+
+  extractKeyFromUrl(publicUrl: string): string | null {
+    try {
+      const url = new URL(publicUrl);
+      // pathname is like "/avatars/userId/uuid-filename.webp"
+      // or "/webu-portal/avatars/..." for path-style URLs
+      const pathname = url.pathname.replace(/^\/+/, "");
+      // Strip leading bucket name if present (path-style)
+      const withoutBucket = pathname.startsWith(`${this.bucketName}/`)
+        ? pathname.slice(this.bucketName.length + 1)
+        : pathname;
+      return withoutBucket || null;
+    } catch {
+      return null;
+    }
+  }
+
+  async deleteObject(key: string): Promise<void> {
+    const command = new DeleteObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+    });
+    await this.s3Client.send(command);
   }
 }

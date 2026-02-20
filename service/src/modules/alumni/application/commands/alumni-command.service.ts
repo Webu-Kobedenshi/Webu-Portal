@@ -15,7 +15,7 @@ export class AlumniCommandService {
   constructor(
     @Inject(AlumniRepository) private readonly alumniRepository: AlumniRepository,
     @Inject(StorageService) private readonly storageService: StorageService,
-  ) {}
+  ) { }
 
   updateInitialSettings(userId: string, input: InitialSettingsInput): Promise<UserDto> {
     const name = input.name.trim();
@@ -118,9 +118,23 @@ export class AlumniCommandService {
       throw new BadRequestException("url is required");
     }
 
+    // Fetch the existing avatarUrl before overwriting it
+    const existing = await this.alumniRepository.findUserById(userId);
+    const oldAvatarUrl = existing?.alumniProfile?.avatarUrl ?? null;
+
     const updated = await this.alumniRepository.updateAvatarUrl(userId, normalizedUrl);
     if (!updated) {
       throw new BadRequestException("Alumni profile not found");
+    }
+
+    // Physically delete the old avatar from R2 (best-effort, non-fatal)
+    if (oldAvatarUrl) {
+      const key = this.storageService.extractKeyFromUrl(oldAvatarUrl);
+      if (key) {
+        this.storageService.deleteObject(key).catch((err: unknown) => {
+          console.error("[StorageService] Failed to delete old avatar:", key, err);
+        });
+      }
     }
 
     return updated;
