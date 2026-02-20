@@ -15,7 +15,7 @@ export class AlumniCommandService {
   constructor(
     @Inject(AlumniRepository) private readonly alumniRepository: AlumniRepository,
     @Inject(StorageService) private readonly storageService: StorageService,
-  ) { }
+  ) {}
 
   updateInitialSettings(userId: string, input: InitialSettingsInput): Promise<UserDto> {
     const name = input.name.trim();
@@ -78,6 +78,10 @@ export class AlumniCommandService {
       throw new BadRequestException(
         "companyNames must contain at least one item when isPublic is true",
       );
+    }
+
+    if (isPublic && !input.nickname?.trim()) {
+      throw new BadRequestException("nickname is required when isPublic is true");
     }
 
     return this.alumniRepository.upsertAlumniProfile(userId, {

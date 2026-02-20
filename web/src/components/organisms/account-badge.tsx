@@ -17,20 +17,44 @@ export function AccountBadge({ account }: AccountBadgeProps) {
   return (
     <Link
       href="/account"
-      className="inline-flex items-center gap-2 rounded-xl border border-stone-200/80 bg-white/80 px-2.5 py-2 text-left transition-all hover:bg-white dark:border-stone-700/60 dark:bg-stone-900/60 dark:hover:bg-stone-900"
-      aria-label="アカウントページ"
+      className="group inline-flex items-center gap-3 rounded-2xl border border-stone-200/80 bg-white/80 pl-2.5 pr-4 py-2 text-left shadow-sm transition-all hover:border-violet-200 hover:bg-violet-50/50 hover:shadow-md dark:border-stone-700/60 dark:bg-stone-900/60 dark:hover:border-violet-900/50 dark:hover:bg-violet-900/20"
+      aria-label="マイページへ移動"
     >
-      <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-xs font-bold text-white">
-        {initial}
-      </span>
-      <span className="min-w-0">
-        <span className="block truncate text-[12px] font-semibold text-stone-800 dark:text-stone-200">
-          {account.name}
+      <div className="flex items-center gap-2.5">
+        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-sm font-bold text-white shadow-sm">
+          {initial}
         </span>
-        <span className="block text-[10px] text-stone-500 dark:text-stone-400">
-          {roleLabel[account.role]}
+        <span className="min-w-0">
+          <span className="block truncate text-[13px] font-bold text-stone-800 dark:text-stone-200">
+            {account.name}
+          </span>
+          <span className="block text-[11px] font-medium text-stone-500 dark:text-stone-400">
+            {roleLabel[account.role]}
+          </span>
         </span>
-      </span>
+      </div>
+
+      {/* Divider */}
+      <div className="h-8 w-px bg-stone-200 dark:bg-stone-700/60" />
+
+      {/* CTA Label & Icon */}
+      <div className="flex items-center gap-1 text-stone-400 transition-colors group-hover:text-violet-600 dark:text-stone-500 dark:group-hover:text-violet-400">
+        <span className="text-[11px] font-bold">マイページ</span>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="transition-transform group-hover:translate-x-0.5"
+        >
+          <path d="m9 18 6-6-6-6" />
+          <title>マイページへ</title>
+        </svg>
+      </div>
     </Link>
   );
 }

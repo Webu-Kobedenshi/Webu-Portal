@@ -21,7 +21,7 @@ export class AlumniResolver {
     private readonly alumniQueryService: AlumniQueryService,
     @Inject(AlumniCommandService)
     private readonly alumniCommandService: AlumniCommandService,
-  ) { }
+  ) {}
 
   @Query("getAlumniList")
   getAlumniList(

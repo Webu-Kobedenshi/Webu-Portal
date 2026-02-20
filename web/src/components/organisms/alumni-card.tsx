@@ -169,9 +169,12 @@ export function AlumniCard({ alumni }: AlumniCardProps) {
 
         {/* ── Remarks as personal quote ── */}
         <p className="mt-3 line-clamp-2 border-l-2 border-stone-200 pl-2.5 text-[12px] leading-relaxed text-stone-500 dark:border-stone-700 dark:text-stone-400">
-          {alumni.remarks ? alumni.remarks : <span className="italic text-stone-300 dark:text-stone-600">なし</span>}
+          {alumni.remarks ? (
+            alumni.remarks
+          ) : (
+            <span className="italic text-stone-300 dark:text-stone-600">なし</span>
+          )}
         </p>
-
 
         {/* ── Contact CTA ── */}
         <div className="mt-4">

@@ -229,6 +229,16 @@ export function AccountProfileForm({
       return false;
     }
 
+    if (showPublicProfileFields && isPublicToSave && !state.nickname.trim()) {
+      const msg = "公開する場合は表示名を1文字以上入力してください。";
+      if (silent) {
+        setAvatarError(msg);
+      } else {
+        setError(msg);
+      }
+      return false;
+    }
+
     setIsSaving(true);
 
     try {
@@ -509,119 +519,43 @@ export function AccountProfileForm({
 
       {showPublicProfileFields ? (
         <>
-          {/* ─── Section 2: プロフィール画像 ─── */}
-          <section className="rounded-2xl border border-stone-200/90 bg-white p-5 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.25)] dark:border-stone-800/80 dark:bg-stone-900/40">
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-fuchsia-100 text-sm dark:bg-fuchsia-900/40">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-fuchsia-600 dark:text-fuchsia-400"
-                >
-                  <title>プロフィール画像</title>
-                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                  <circle cx="9" cy="9" r="2" />
-                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                </svg>
-              </span>
-              <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                プロフィール画像
-              </h3>
-            </div>
-
-            <div className="mt-4 grid items-start gap-3 sm:grid-cols-[96px_minmax(0,1fr)]">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt="プロフィール画像"
-                  className="h-24 w-24 rounded-2xl border border-stone-200/80 object-cover dark:border-stone-700/60"
-                />
-              ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-dashed border-stone-300 text-[10px] font-medium text-stone-400 dark:border-stone-600 dark:text-stone-500">
-                  No Image
-                </div>
-              )}
-
-              <div className="min-w-0 flex-1 space-y-2">
-                <input
-                  ref={avatarFileInputRef}
-                  id="profile-avatar-file"
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => setSelectedAvatarFile(event.target.files?.[0] ?? null)}
-                  disabled={isUploadingAvatar}
-                  className="sr-only"
-                />
-
-                <div className="grid grid-cols-2 gap-2">
-                  <label
-                    htmlFor="profile-avatar-file"
-                    className="inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-lg border border-stone-300 px-3 text-xs font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+          {/* ─── Section 3: 公開プロフィール設定 (Progressive Disclosure) ─── */}
+          <section className="overflow-hidden rounded-2xl border border-stone-200/90 bg-white shadow-[0_8px_24px_-18px_rgba(0,0,0,0.25)] dark:border-stone-800/80 dark:bg-stone-900/40">
+            {/* Header Area with Toggle */}
+            <div className="flex flex-col gap-4 border-b border-stone-100 bg-stone-50/50 p-5 dark:border-stone-800/60 dark:bg-stone-900/20 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3 sm:items-center">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-100/80 text-sm dark:bg-violet-900/30">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-violet-600 dark:text-violet-400"
                   >
-                    写真を選択
-                  </label>
-
-                  <button
-                    type="button"
-                    onClick={handleAvatarUpload}
-                    disabled={isUploadingAvatar || !selectedAvatarFile}
-                    className="inline-flex h-9 w-full items-center justify-center rounded-lg bg-stone-900 px-3 text-xs font-bold text-white transition-colors hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
-                  >
-                    {isUploadingAvatar ? "アップロード中…" : "アップロード"}
-                  </button>
-                </div>
-
-                {selectedAvatarFile ? (
-                  <p className="truncate rounded-lg border border-stone-200/80 bg-stone-50 px-2 py-1 text-[11px] text-stone-500 dark:border-stone-700/60 dark:bg-stone-800/60 dark:text-stone-400">
-                    {selectedAvatarFile.name}
+                    <title>公開設定</title>
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                </span>
+                <div>
+                  <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                    公開プロフィール設定
+                  </h3>
+                  <p className="mt-0.5 text-[11px] text-stone-500 dark:text-stone-400">
+                    内定先や表示名を後輩に公開できます
                   </p>
-                ) : null}
+                </div>
               </div>
-            </div>
-            {avatarError ? (
-              <p className="mt-3 rounded-xl border border-rose-200/80 bg-rose-50/80 px-3 py-2 text-xs text-rose-700 dark:border-rose-800/50 dark:bg-rose-950/30 dark:text-rose-300">
-                {avatarError}
-              </p>
-            ) : null}
-            {avatarMessage ? (
-              <p className="mt-3 rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-xs text-emerald-700 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-300">
-                {avatarMessage}
-              </p>
-            ) : null}
-          </section>
 
-          {/* ─── Section 3: 公開設定 ─── */}
-          <section className="rounded-2xl border border-stone-200/90 bg-white p-5 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.25)] dark:border-stone-800/80 dark:bg-stone-900/40">
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-sm dark:bg-emerald-900/40">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-emerald-600 dark:text-emerald-400"
-                >
-                  <title>公開設定</title>
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              </span>
-              <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">公開設定</h3>
-            </div>
-
-            <div className="mt-4 space-y-4">
-              {/* Toggle: 公開する */}
-              <label className="flex cursor-pointer items-center gap-3">
+              {/* Master Toggle */}
+              <label className="flex cursor-pointer items-center gap-2.5 sm:justify-end">
+                <span className="text-[13px] font-semibold text-stone-700 dark:text-stone-300">
+                  {state.isPublic ? "公開中" : "非公開"}
+                </span>
                 <span className="relative inline-flex">
                   <input
                     type="checkbox"
@@ -636,211 +570,281 @@ export function AccountProfileForm({
                     }}
                     className="peer sr-only"
                   />
-                  <span className="block h-6 w-10 rounded-full bg-stone-300 transition-colors peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-400 peer-focus-visible:ring-offset-2 dark:bg-stone-600 dark:peer-checked:bg-emerald-500" />
-                  <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
-                </span>
-                <span className="text-sm font-semibold text-stone-800 dark:text-stone-200">
-                  プロフィールを公開する
-                </span>
-              </label>
-
-              {!state.isPublic ? (
-                <div className="rounded-xl bg-amber-50/80 px-3.5 py-2.5 text-xs text-amber-700 dark:bg-amber-900/20 dark:text-amber-300">
-                  💡 公開すると、後輩があなたの内定先情報を見ることができます。
-                </div>
-              ) : null}
-
-              {/* Nickname & Contact */}
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label htmlFor="profile-nickname" className="space-y-1.5">
-                  <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-                    表示名
-                  </span>
-                  <Input
-                    id="profile-nickname"
-                    value={state.nickname}
-                    onChange={(event) => setField("nickname", event.target.value)}
-                    placeholder="例: たろう"
-                    disabled={!canEditAlumniProfile}
-                  />
-                </label>
-
-                <label htmlFor="profile-contact-email" className="space-y-1.5">
-                  <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-                    連絡先メール
-                  </span>
-                  <Input
-                    id="profile-contact-email"
-                    value={state.contactEmail}
-                    onChange={(event) => setField("contactEmail", event.target.value)}
-                    placeholder="example@st.kobedenshi.ac.jp"
-                    type="email"
-                    disabled={!canEditAlumniProfile}
-                  />
-                </label>
-              </div>
-
-              {/* Toggle: 連絡先公開 */}
-              <label className="flex cursor-pointer items-center gap-3">
-                <span className="relative inline-flex">
-                  <input
-                    type="checkbox"
-                    checked={state.acceptContact}
-                    onChange={(event) => setField("acceptContact", event.target.checked)}
-                    disabled={!canEditAlumniProfile}
-                    className="peer sr-only"
-                  />
-                  <span className="block h-6 w-10 rounded-full bg-stone-300 transition-colors peer-checked:bg-emerald-500 peer-disabled:opacity-40 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-400 peer-focus-visible:ring-offset-2 dark:bg-stone-600 dark:peer-checked:bg-emerald-500" />
-                  <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
-                </span>
-                <span className="text-sm text-stone-700 dark:text-stone-300">
-                  連絡先の公開を許可する
+                  <span className="block h-6 w-10.5 rounded-full bg-stone-200 transition-colors peer-checked:bg-violet-500 peer-focus-visible:ring-2 peer-focus-visible:ring-violet-400 peer-focus-visible:ring-offset-2 dark:bg-stone-700 dark:peer-checked:bg-violet-500" />
+                  <span className="absolute left-[3px] top-[3px] h-4.5 w-4.5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-[18px]" />
                 </span>
               </label>
             </div>
-          </section>
 
-          {/* ─── Section 4: 内定先・勤務先 ─── */}
-          <section className="rounded-2xl border border-stone-200/90 bg-white p-5 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.25)] dark:border-stone-800/80 dark:bg-stone-900/40">
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 text-sm dark:bg-amber-900/40">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-amber-600 dark:text-amber-400"
-                >
-                  <title>内定先</title>
-                  <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
-                  <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
-                  <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
-                  <path d="M10 6h4" />
-                  <path d="M10 10h4" />
-                  <path d="M10 14h4" />
-                  <path d="M10 18h4" />
-                </svg>
-              </span>
-              <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                内定先・勤務先
-              </h3>
-              <span className="ml-auto text-[11px] text-stone-400 dark:text-stone-500">
-                複数登録可
-              </span>
-            </div>
-
-            <div className="mt-4 space-y-2.5">
-              {state.companyNames.length === 0 ? (
-                <div className="rounded-xl border-2 border-dashed border-stone-200 px-4 py-6 text-center dark:border-stone-700">
-                  <p className="text-sm font-medium text-stone-400 dark:text-stone-500">
-                    まだ登録されていません
-                  </p>
-                  <p className="mt-1 text-[11px] text-stone-400 dark:text-stone-500">
-                    下のボタンから追加してください
-                  </p>
-                </div>
-              ) : null}
-              {state.companyNames.map((companyName, index) => (
-                <div key={companyRowIds[index]} className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-xs font-bold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-                    {index + 1}
+            {/* Content Area (Progressive Disclosure) */}
+            <div className="relative p-5">
+              {/* Overlay when disabled */}
+              {!state.isPublic && (
+                <div className="absolute inset-x-0 bottom-0 top-0 z-10 flex flex-col items-center justify-center rounded-b-2xl bg-white/60 p-6 backdrop-blur-[2px] dark:bg-stone-950/60 transition-all duration-300">
+                  <div className="flex max-w-[280px] flex-col items-center gap-3 rounded-2xl border border-stone-200/80 bg-white/90 p-5 text-center shadow-lg backdrop-blur-md dark:border-stone-800 dark:bg-stone-900/90">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 dark:bg-stone-800">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="text-stone-400"
+                      >
+                        <title>非公開ロック</title>
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    </span>
+                    <p className="text-[12px] font-medium leading-relaxed text-stone-600 dark:text-stone-300">
+                      公開設定をオンにすると、お世話になった母校の後輩たちに
+                      <strong className="text-stone-900 dark:text-white">内定先</strong>や
+                      <strong className="text-stone-900 dark:text-white">メッセージ</strong>
+                      を共有できます。
+                    </p>
                   </div>
-                  <Input
-                    value={companyName}
-                    onChange={(event) => setCompanyNameAt(index, event.target.value)}
-                    placeholder="例: 株式会社○○"
-                    disabled={!canEditAlumniProfile}
-                  />
+                </div>
+              )}
+
+              {/* The Fields (Faded out when disabled) */}
+              <div
+                className={`space-y-6 transition-all duration-300 ${!state.isPublic ? "opacity-30 blur-[1px] select-none pointer-events-none" : ""}`}
+              >
+                {/* ─── Avatar Upload ─── */}
+                <div className="space-y-3">
+                  <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                    プロフィール画像
+                  </span>
+                  <div className="grid items-start gap-3 sm:grid-cols-[96px_minmax(0,1fr)]">
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt="プロフィール画像"
+                        className="h-24 w-24 rounded-2xl border border-stone-200/80 object-cover dark:border-stone-700/60"
+                      />
+                    ) : (
+                      <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-dashed border-stone-300 text-[10px] font-medium text-stone-400 dark:border-stone-600 dark:text-stone-500">
+                        No Image
+                      </div>
+                    )}
+
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <input
+                        ref={avatarFileInputRef}
+                        id="profile-avatar-file"
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => setSelectedAvatarFile(event.target.files?.[0] ?? null)}
+                        disabled={isUploadingAvatar || !state.isPublic}
+                        className="sr-only"
+                      />
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <label
+                          htmlFor="profile-avatar-file"
+                          className="inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-lg border border-stone-300 px-3 text-xs font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+                        >
+                          写真を選択
+                        </label>
+
+                        <button
+                          type="button"
+                          onClick={handleAvatarUpload}
+                          disabled={isUploadingAvatar || !selectedAvatarFile || !state.isPublic}
+                          className="inline-flex h-9 w-full items-center justify-center rounded-lg bg-stone-900 px-3 text-xs font-bold text-white transition-colors hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
+                        >
+                          {isUploadingAvatar ? "アップロード中…" : "アップロード"}
+                        </button>
+                      </div>
+
+                      {selectedAvatarFile ? (
+                        <p className="truncate rounded-lg border border-stone-200/80 bg-stone-50 px-2 py-1 text-[11px] text-stone-500 dark:border-stone-700/60 dark:bg-stone-800/60 dark:text-stone-400">
+                          {selectedAvatarFile.name}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                  {avatarError ? (
+                    <p className="mt-2 rounded-xl border border-rose-200/80 bg-rose-50/80 px-3 py-2 text-xs text-rose-700 dark:border-rose-800/50 dark:bg-rose-950/30 dark:text-rose-300">
+                      {avatarError}
+                    </p>
+                  ) : null}
+                  {avatarMessage ? (
+                    <p className="mt-2 rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-xs text-emerald-700 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-300">
+                      {avatarMessage}
+                    </p>
+                  ) : null}
+                </div>
+
+                <hr className="border-stone-100 dark:border-stone-800/60" />
+
+                {/* Nickname & Contact */}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label htmlFor="profile-nickname" className="space-y-1.5">
+                    <span className="flex items-center justify-between text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                      <span>
+                        表示名 <span className="text-rose-500">*</span>
+                      </span>
+                    </span>
+                    <Input
+                      id="profile-nickname"
+                      value={state.nickname}
+                      onChange={(event) => setField("nickname", event.target.value)}
+                      placeholder="例: たろう"
+                      disabled={!canEditAlumniProfile}
+                      className={
+                        !state.nickname.trim() && state.isPublic
+                          ? "border-rose-300 focus-visible:ring-rose-400"
+                          : ""
+                      }
+                    />
+                  </label>
+
+                  <label htmlFor="profile-contact-email" className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                      <span>連絡先メールアドレス</span>
+
+                      {/* Contact Toggle Inline */}
+                      <label className="flex cursor-pointer items-center gap-1.5">
+                        <span className="text-[10px]">受け付ける</span>
+                        <span className="relative inline-flex">
+                          <input
+                            type="checkbox"
+                            checked={state.acceptContact}
+                            onChange={(event) => setField("acceptContact", event.target.checked)}
+                            disabled={!canEditAlumniProfile}
+                            className="peer sr-only"
+                          />
+                          <span className="block h-3.5 w-6 rounded-full bg-stone-300 transition-colors peer-checked:bg-emerald-500 dark:bg-stone-600" />
+                          <span className="absolute left-[2px] top-[2px] h-2.5 w-2.5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-[10px]" />
+                        </span>
+                      </label>
+                    </div>
+                    <Input
+                      id="profile-contact-email"
+                      value={state.contactEmail}
+                      onChange={(event) => setField("contactEmail", event.target.value)}
+                      placeholder="example@st.kobedenshi.ac.jp"
+                      type="email"
+                      disabled={!canEditAlumniProfile || !state.acceptContact}
+                      className={!state.acceptContact ? "opacity-50" : ""}
+                    />
+                  </label>
+                </div>
+
+                <hr className="border-stone-100 dark:border-stone-800/60" />
+
+                {/* Companies */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                      内定先・勤務先 <span className="text-rose-500">*</span>
+                    </span>
+                    <span className="text-[10px] text-stone-400 dark:text-stone-500">
+                      複数登録可
+                    </span>
+                  </div>
+
+                  {state.companyNames.length === 0 ? (
+                    <div
+                      className={`rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors ${state.isPublic ? "border-amber-200 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-950/10" : "border-stone-200 dark:border-stone-700"}`}
+                    >
+                      <p
+                        className={`text-[13px] font-medium ${state.isPublic ? "text-amber-700 dark:text-amber-500" : "text-stone-400 dark:text-stone-500"}`}
+                      >
+                        ここに追加された企業名がカードに表示されます
+                      </p>
+                    </div>
+                  ) : null}
+
+                  <div className="space-y-2">
+                    {state.companyNames.map((companyName, index) => (
+                      <div key={companyRowIds[index]} className="flex items-center gap-2">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100/80 text-[11px] font-bold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                          {index + 1}
+                        </div>
+                        <Input
+                          value={companyName}
+                          onChange={(event) => setCompanyNameAt(index, event.target.value)}
+                          placeholder="例: 株式会社○○"
+                          disabled={!canEditAlumniProfile}
+                          className={
+                            !companyName.trim() && state.isPublic
+                              ? "border-rose-300 focus-visible:ring-rose-400"
+                              : ""
+                          }
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeCompanyNameField(index)}
+                          disabled={!canEditAlumniProfile}
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-stone-400 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-rose-900/20 dark:hover:text-rose-400"
+                          title="削除"
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <title>削除</title>
+                            <path d="M3 6h18" />
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
                   <button
                     type="button"
-                    onClick={() => removeCompanyNameField(index)}
+                    onClick={addCompanyNameField}
                     disabled={!canEditAlumniProfile}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-stone-400 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-rose-900/20 dark:hover:text-rose-400"
-                    title="削除"
+                    className="mt-2 inline-flex h-9 items-center gap-1.5 rounded-xl border border-dashed border-stone-300 px-4 text-xs font-semibold text-stone-600 transition-all hover:border-stone-400 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-600 dark:text-stone-400 dark:hover:border-stone-500 dark:hover:bg-stone-800"
                   >
                     <svg
-                      width="16"
-                      height="16"
+                      width="14"
+                      height="14"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2"
+                      strokeWidth="2.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     >
-                      <title>削除</title>
-                      <path d="M3 6h18" />
-                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                      <title>追加</title>
+                      <path d="M12 5v14" />
+                      <path d="M5 12h14" />
                     </svg>
+                    内定先・勤務先を追加
                   </button>
                 </div>
-              ))}
-              <button
-                type="button"
-                onClick={addCompanyNameField}
-                disabled={!canEditAlumniProfile}
-                className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-dashed border-stone-300 px-4 text-xs font-semibold text-stone-600 transition-all hover:border-stone-400 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-600 dark:text-stone-400 dark:hover:border-stone-500 dark:hover:bg-stone-800"
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <title>追加</title>
-                  <path d="M12 5v14" />
-                  <path d="M5 12h14" />
-                </svg>
-                内定先を追加
-              </button>
-            </div>
-          </section>
 
-          {/* ─── Section 5: メッセージ ─── */}
-          <section className="rounded-2xl border border-stone-200/90 bg-white p-5 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.25)] dark:border-stone-800/80 dark:bg-stone-900/40">
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-100 text-sm dark:bg-sky-900/40">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-sky-600 dark:text-sky-400"
-                >
-                  <title>メッセージ</title>
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
-              </span>
-              <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                後輩へのメッセージ
-              </h3>
-            </div>
+                <hr className="border-stone-100 dark:border-stone-800/60" />
 
-            <label className="mt-4 block space-y-1.5">
-              <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-                備考（活動内容やメッセージなど）
-              </span>
-              <textarea
-                value={state.remarks}
-                onChange={(event) => setField("remarks", event.target.value)}
-                className="min-h-24 w-full rounded-xl border border-stone-200/80 bg-white px-3.5 py-2.5 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 hover:border-stone-300 focus:border-violet-400 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-700/60 dark:bg-stone-900/60 dark:text-stone-100 dark:placeholder:text-stone-500 dark:hover:border-stone-600 dark:focus:border-violet-500/60 dark:focus:shadow-[0_0_0_3px_rgba(139,92,246,0.12)]"
-                placeholder="就活のアドバイスや、学校生活の思い出など自由に書いてください 🎓"
-                disabled={!canEditAlumniProfile}
-              />
-            </label>
+                {/* Remarks / Message */}
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                    後輩へのメッセージ
+                  </span>
+                  <textarea
+                    value={state.remarks}
+                    onChange={(event) => setField("remarks", event.target.value)}
+                    className="min-h-24 w-full rounded-xl border border-stone-200/80 bg-white px-3.5 py-2.5 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 hover:border-stone-300 focus:border-violet-400 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-700/60 dark:bg-stone-900/60 dark:text-stone-100 dark:placeholder:text-stone-500 dark:hover:border-stone-600 dark:focus:border-violet-500/60 dark:focus:shadow-[0_0_0_3px_rgba(139,92,246,0.12)]"
+                    placeholder="就活のアドバイスや、学校生活の思い出など自由に書いてください 🎓"
+                    disabled={!canEditAlumniProfile}
+                  />
+                </div>
+              </div>
+            </div>
           </section>
         </>
       ) : null}

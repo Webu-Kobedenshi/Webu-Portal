@@ -73,114 +73,132 @@ const updateAlumniProfileMutation = `
 
 async function executeGraphql<T>(serviceToken: string, query: string, variables: unknown) {
   const endpoint = process.env.GRAPHQL_ENDPOINT ?? "http://localhost:4000/graphql";
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${serviceToken}`,
-    },
-    body: JSON.stringify({ query, variables }),
-    cache: "no-store",
-  });
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${serviceToken}`,
+      },
+      body: JSON.stringify({ query, variables }),
+      cache: "no-store",
+    });
 
-  return (await response.json()) as GraphQlResponse<T>;
+    const text = await response.text();
+    if (!text) {
+      return { errors: [{ message: "Empty response from service" }] } as GraphQlResponse<T>;
+    }
+
+    return JSON.parse(text) as GraphQlResponse<T>;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to connect to service";
+    return { errors: [{ message }] } as GraphQlResponse<T>;
+  }
 }
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
-  const serviceToken = session?.serviceToken;
+  try {
+    const session = await getServerSession(authOptions);
+    const serviceToken = session?.serviceToken;
 
-  if (!serviceToken) {
-    return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
-  }
+    if (!serviceToken) {
+      return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
+    }
 
-  const body = (await request.json()) as Body;
-  if (
-    !body.name ||
-    !body.studentId ||
-    !body.enrollmentYear ||
-    !body.durationYears ||
-    !body.department
-  ) {
-    return NextResponse.json(
-      {
-        ok: false,
-        message: "name, studentId, enrollmentYear, durationYears, department are required",
-      },
-      { status: 400 },
-    );
-  }
+    const body = (await request.json()) as Body;
+    if (
+      !body.name ||
+      !body.studentId ||
+      !body.enrollmentYear ||
+      !body.durationYears ||
+      !body.department
+    ) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: "name, studentId, enrollmentYear, durationYears, department are required",
+        },
+        { status: 400 },
+      );
+    }
 
-  const initialResult = await executeGraphql<{
-    updateInitialSettings: { id: string };
-  }>(serviceToken, updateInitialSettingsMutation, {
-    input: {
-      name: body.name,
-      studentId: body.studentId,
-      enrollmentYear: body.enrollmentYear,
-      durationYears: body.durationYears,
-      department: body.department,
-    },
-  });
-
-  if (initialResult.errors?.length || !initialResult.data?.updateInitialSettings) {
-    return NextResponse.json(
-      {
-        ok: false,
-        message:
-          initialResult.errors?.map((item) => item.message).join(", ") ||
-          "Initial settings update failed",
-      },
-      { status: 400 },
-    );
-  }
-
-  const companyNames = (body.companyNames ?? [])
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0);
-  const contactEmail = body.contactEmail?.trim() || session.user?.email || undefined;
-  const isPublic = body.isPublic ?? false;
-
-  if (isPublic && companyNames.length === 0) {
-    return NextResponse.json(
-      {
-        ok: false,
-        message: "公開する場合は companyNames を1件以上指定してください",
-      },
-      { status: 400 },
-    );
-  }
-
-  const graduationYear = body.enrollmentYear + body.durationYears;
-
-  const alumniResult = await executeGraphql<{ updateAlumniProfile: { id: string } }>(
-    serviceToken,
-    updateAlumniProfileMutation,
-    {
+    const initialResult = await executeGraphql<{
+      updateInitialSettings: { id: string };
+    }>(serviceToken, updateInitialSettingsMutation, {
       input: {
-        nickname: body.nickname,
-        graduationYear,
+        name: body.name,
+        studentId: body.studentId,
+        enrollmentYear: body.enrollmentYear,
+        durationYears: body.durationYears,
         department: body.department,
-        companyNames,
-        remarks: body.remarks,
-        contactEmail,
-        isPublic,
-        acceptContact: isPublic ? body.acceptContact : false,
       },
-    },
-  );
+    });
 
-  if (alumniResult.errors?.length || !alumniResult.data?.updateAlumniProfile) {
-    return NextResponse.json(
+    if (initialResult.errors?.length || !initialResult.data?.updateInitialSettings) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message:
+            initialResult.errors?.map((item) => item.message).join(", ") ||
+            "Initial settings update failed",
+        },
+        { status: 400 },
+      );
+    }
+
+    const companyNames = (body.companyNames ?? [])
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+    const contactEmail = body.contactEmail?.trim() || session.user?.email || undefined;
+    const isPublic = body.isPublic ?? false;
+
+    if (isPublic && companyNames.length === 0) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: "公開する場合は companyNames を1件以上指定してください",
+        },
+        { status: 400 },
+      );
+    }
+
+    const graduationYear = body.enrollmentYear + body.durationYears;
+
+    const alumniResult = await executeGraphql<{ updateAlumniProfile: { id: string } }>(
+      serviceToken,
+      updateAlumniProfileMutation,
       {
-        ok: false,
-        message:
-          alumniResult.errors?.map((item) => item.message).join(", ") ||
-          "Alumni profile update failed",
+        input: {
+          nickname: body.nickname,
+          graduationYear,
+          department: body.department,
+          companyNames,
+          remarks: body.remarks,
+          contactEmail,
+          isPublic,
+          acceptContact: isPublic ? body.acceptContact : false,
+        },
       },
-      { status: 400 },
+    );
+
+    if (alumniResult.errors?.length || !alumniResult.data?.updateAlumniProfile) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message:
+            alumniResult.errors?.map((item) => item.message).join(", ") ||
+            "Alumni profile update failed",
+        },
+        { status: 400 },
+      );
+    }
+
+    return NextResponse.json({ ok: true, alumniUpdated: true, message: "Profile updated" });
+  } catch (err) {
+    console.error("[POST /api/account/profile] Unexpected error:", err);
+    return NextResponse.json(
+      { ok: false, message: "サーバーエラーが発生しました。時間をおいて再試行してください。" },
+      { status: 500 },
     );
   }
-
-  return NextResponse.json({ ok: true, alumniUpdated: true, message: "Profile updated" });
 }

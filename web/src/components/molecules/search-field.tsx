@@ -27,7 +27,7 @@ export function SearchField({
   const [pageSize, setPageSize] = useState(String(initialPageSize));
   const [companyInput, setCompanyInput] = useState(initialCompany);
   const [company, setCompany] = useState(initialCompany);
-  const canReset = Boolean(department || companyInput || graduationYear || pageSize !== "20");
+  const canReset = Boolean(department || companyInput || graduationYear || pageSize !== "10");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -52,7 +52,7 @@ export function SearchField({
       query.set("graduationYear", graduationYear);
     }
 
-    if (pageSize !== "20") {
+    if (pageSize !== "10") {
       query.set("pageSize", pageSize);
     }
 
