@@ -15,8 +15,8 @@ primary_region = "iad"
   internal_port = 4000
   force_https = true
   auto_start_machines = true
-  auto_stop_machines = "off"
-  min_machines_running = 1
+  auto_stop_machines = "stop"
+  min_machines_running = 0
   processes = ["app"]
 
   [http_service.concurrency]

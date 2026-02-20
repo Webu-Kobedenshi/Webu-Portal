@@ -93,3 +93,21 @@ Service 側:
 
 - `auto_stop_machines = "off"` でスリープしにくい設定にしていますが、利用量に応じて課金されます。
 - Neon の接続はまず Direct URL（`-pooler` なし）を推奨します。
+
+## 9. main マージ時の自動デプロイ（GitHub Actions）
+
+このリポジトリには自動デプロイ用 Workflow を追加済みです。
+
+- [.github/workflows/fly-deploy.yml](../.github/workflows/fly-deploy.yml)
+
+挙動:
+
+- `main` への push 時に実行
+- 変更対象が `service/**` または `fly.toml` の場合に実行
+- `flyctl deploy --remote-only` でデプロイ
+
+事前設定:
+
+1. GitHub リポジトリ → `Settings` → `Secrets and variables` → `Actions`
+2. `New repository secret` で `FLY_API_TOKEN` を追加
+3. 値には `flyctl auth token` の出力を設定

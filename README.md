@@ -14,6 +14,7 @@ Next.js(App Router) + NestJS(GraphQL schema-first) + PostgreSQL(Prisma) を Dock
 - [Docs/DEPLOY_FLYIO.md](./Docs/DEPLOY_FLYIO.md): Fly.io デプロイ手順（service）
 - [Docs/DEPLOY_NEON.md](./Docs/DEPLOY_NEON.md): Neon（PostgreSQL）設定手順
 - [Docs/DEPLOY_R2.md](./Docs/DEPLOY_R2.md): Cloudflare R2 設定手順
+- [Docs/DEPLOY_VERCEL.md](./Docs/DEPLOY_VERCEL.md): Vercel デプロイ手順（web）
 
 ## 構成
 

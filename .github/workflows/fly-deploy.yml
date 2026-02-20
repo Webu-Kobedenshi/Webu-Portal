@@ -1,0 +1,29 @@
+name: Deploy Fly.io (service)
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - "service/**"
+            - "fly.toml"
+            - ".github/workflows/fly-deploy.yml"
+    workflow_dispatch:
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Flyctl
+              uses: superfly/flyctl-actions/setup-flyctl@master
+
+            - name: Deploy to Fly.io
+              run: flyctl deploy --remote-only
+              env:
+                  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
