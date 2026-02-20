@@ -21,7 +21,7 @@ export class AlumniResolver {
     private readonly alumniQueryService: AlumniQueryService,
     @Inject(AlumniCommandService)
     private readonly alumniCommandService: AlumniCommandService,
-  ) {}
+  ) { }
 
   @Query("getAlumniList")
   getAlumniList(
@@ -35,7 +35,7 @@ export class AlumniResolver {
       department,
       company,
       graduationYear,
-      limit: limit ?? 20,
+      limit: limit ?? 10,
       offset: offset ?? 0,
     });
   }

@@ -60,9 +60,9 @@ export default async function Home({ searchParams }: PageProps) {
   const parsedPage = Number((Array.isArray(pageParam) ? pageParam[0] : pageParam)?.trim() ?? "1");
   const currentPage = Number.isFinite(parsedPage) && parsedPage > 0 ? Math.floor(parsedPage) : 1;
   const parsedPageSize = Number(
-    (Array.isArray(pageSizeParam) ? pageSizeParam[0] : pageSizeParam)?.trim() ?? "20",
+    (Array.isArray(pageSizeParam) ? pageSizeParam[0] : pageSizeParam)?.trim() ?? "10",
   );
-  const pageSize = [10, 20, 50].includes(parsedPageSize) ? parsedPageSize : 20;
+  const pageSize = [10, 20, 50].includes(parsedPageSize) ? parsedPageSize : 10;
   const offset = (currentPage - 1) * pageSize;
 
   const { alumniList, totalCount, hasNextPage, error } = await fetchAlumniList({
