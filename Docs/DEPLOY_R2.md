@@ -32,15 +32,27 @@ R2 画面から S3 endpoint を確認します。
 
 - `PUBLIC_ENDPOINT`: `https://<your-r2-public-domain>` もしくは `https://<bucket>.r2.dev`
 
-## 4. CORS 設定（推奨）
+## 4. CORS 設定（必須）
 
-バケット CORS に以下を設定:
+R2 バケットで CORS を設定しないと、ブラウザの preflight (`OPTIONS`) が失敗し、
+`No 'Access-Control-Allow-Origin' header` でアップロードできません。
 
-- Allowed Origins: `https://<your-web-domain>`
-- Allowed Methods: `PUT, GET, HEAD`
-- Allowed Headers: `*`
-- Expose Headers: `ETag`
-- Max Age: `3600`
+Cloudflare Dashboard → R2 → 対象バケット → `Settings` → `CORS policy` に、
+以下の JSON を設定してください。
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://webu-portal-web.vercel.app"],
+    "AllowedMethods": ["PUT", "GET", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+カスタムドメインを使う場合は、`AllowedOrigins` に本番の Web ドメインを追加してください。
 
 ## 5. Fly.io secrets 設定
 
@@ -58,6 +70,13 @@ flyctl secrets set \
 1. `flyctl deploy`
 2. Web から画像アップロード
 3. 保存された URL で画像が表示されることを確認
+
+### preflight エラー時の確認
+
+- エラー例: `No 'Access-Control-Allow-Origin' header`
+- `AllowedOrigins` が実際のフロント URL と完全一致しているか
+- `PUT` と `AllowedHeaders: ["*"]` が入っているか
+- CORS 保存後に数十秒待ってから再試行
 
 ## 7. セキュリティ注意
 

@@ -56,8 +56,27 @@ export class StorageService {
     return `avatars/${userId}/${randomUUID()}-${normalized || "upload.bin"}`;
   }
 
+  private buildPublicBaseUrl(): string {
+    const endpoint = this.publicEndpoint.replace(/\/$/, "");
+
+    try {
+      const url = new URL(endpoint);
+      const path = url.pathname.replace(/^\/+|\/+$/g, "");
+      const hostHasBucket = url.hostname.startsWith(`${this.bucketName}.`);
+      const pathHasBucket = path === this.bucketName || path.endsWith(`/${this.bucketName}`);
+
+      if (hostHasBucket || pathHasBucket) {
+        return endpoint;
+      }
+
+      return `${endpoint}/${this.bucketName}`;
+    } catch {
+      return `${endpoint}/${this.bucketName}`;
+    }
+  }
+
   private toPublicFileUrl(key: string): string {
-    return `${this.publicEndpoint.replace(/\/$/, "")}/${this.bucketName}/${key}`;
+    return `${this.buildPublicBaseUrl()}/${key}`;
   }
 
   async createPutUploadUrl(params: {
