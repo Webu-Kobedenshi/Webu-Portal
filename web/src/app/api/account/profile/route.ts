@@ -38,6 +38,12 @@ type Body = {
   contactEmail?: string;
   isPublic?: boolean;
   acceptContact?: boolean;
+  skills?: string[];
+  portfolioUrl?: string;
+  gakuchika?: string;
+  entryTrigger?: string;
+  interviewTip?: string;
+  usefulCoursework?: string;
 };
 
 type GraphQlResponse<T> = {
@@ -67,6 +73,12 @@ const updateAlumniProfileMutation = `
       companyNames
       isPublic
       acceptContact
+      skills
+      portfolioUrl
+      gakuchika
+      entryTrigger
+      interviewTip
+      usefulCoursework
     }
   }
 `;
@@ -177,6 +189,12 @@ export async function POST(request: Request) {
           contactEmail,
           isPublic,
           acceptContact: isPublic ? body.acceptContact : false,
+          skills: body.skills,
+          portfolioUrl: body.portfolioUrl,
+          gakuchika: body.gakuchika,
+          entryTrigger: body.entryTrigger,
+          interviewTip: body.interviewTip,
+          usefulCoursework: body.usefulCoursework,
         },
       },
     );

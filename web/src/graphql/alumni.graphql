@@ -23,6 +23,13 @@ query GetAlumniList(
       contactEmail
       isPublic
       acceptContact
+      avatarUrl
+      skills
+      portfolioUrl
+      gakuchika
+      entryTrigger
+      interviewTip
+      usefulCoursework
       createdAt
       updatedAt
     }

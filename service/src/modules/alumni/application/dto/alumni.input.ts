@@ -17,6 +17,12 @@ export type UpdateAlumniProfileInput = {
   contactEmail?: string;
   isPublic?: boolean;
   acceptContact?: boolean;
+  skills?: string[];
+  portfolioUrl?: string;
+  gakuchika?: string;
+  entryTrigger?: string;
+  interviewTip?: string;
+  usefulCoursework?: string;
 };
 
 export type UploadUrlResponse = {

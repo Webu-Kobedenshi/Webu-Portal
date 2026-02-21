@@ -34,6 +34,12 @@ export type AlumniProfile = {
   remarks: string | null;
   contactEmail: string | null;
   avatarUrl: string | null;
+  skills: string[];
+  portfolioUrl: string | null;
+  gakuchika: string | null;
+  entryTrigger: string | null;
+  interviewTip: string | null;
+  usefulCoursework: string | null;
   isPublic: boolean;
   acceptContact: boolean;
   createdAt: string;

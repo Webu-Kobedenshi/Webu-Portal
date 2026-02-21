@@ -16,7 +16,7 @@ export class AlumniCommandService {
   constructor(
     @Inject(AlumniRepository) private readonly alumniRepository: AlumniRepository,
     @Inject(StorageService) private readonly storageService: StorageService,
-  ) { }
+  ) {}
 
   updateInitialSettings(userId: string, input: InitialSettingsInput): Promise<UserDto> {
     const name = input.name.trim();
@@ -85,12 +85,25 @@ export class AlumniCommandService {
       throw new BadRequestException("nickname is required when isPublic is true");
     }
 
+    // Deep-dive fields normalization
+    const skills = Array.from(
+      new Set((input.skills ?? []).map((s) => s.trim()).filter((s) => s.length > 0)),
+    ).slice(0, 3);
+    const portfolioUrl = input.portfolioUrl !== undefined ? input.portfolioUrl.trim() : undefined;
+
     return this.alumniRepository.upsertAlumniProfile(userId, {
       ...input,
       companyNames,
       contactEmail,
       isPublic,
       acceptContact: isPublic ? acceptContact : false,
+      skills,
+      portfolioUrl,
+      gakuchika: input.gakuchika !== undefined ? input.gakuchika.trim() : undefined,
+      entryTrigger: input.entryTrigger !== undefined ? input.entryTrigger.trim() : undefined,
+      interviewTip: input.interviewTip !== undefined ? input.interviewTip.trim() : undefined,
+      usefulCoursework:
+        input.usefulCoursework !== undefined ? input.usefulCoursework.trim() : undefined,
     });
   }
 

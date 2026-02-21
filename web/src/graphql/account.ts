@@ -48,6 +48,12 @@ const getMyProfileQuery = `
         avatarUrl
         isPublic
         acceptContact
+        skills
+        portfolioUrl
+        gakuchika
+        entryTrigger
+        interviewTip
+        usefulCoursework
         createdAt
         updatedAt
       }

@@ -42,6 +42,12 @@ type AccountProfileFormState = {
   contactEmail: string;
   isPublic: boolean;
   acceptContact: boolean;
+  skills: string[];
+  portfolioUrl: string;
+  gakuchika: string;
+  entryTrigger: string;
+  interviewTip: string;
+  usefulCoursework: string;
 };
 
 const defaultState: AccountProfileFormState = {
@@ -56,6 +62,12 @@ const defaultState: AccountProfileFormState = {
   contactEmail: "",
   isPublic: false,
   acceptContact: false,
+  skills: [],
+  portfolioUrl: "",
+  gakuchika: "",
+  entryTrigger: "",
+  interviewTip: "",
+  usefulCoursework: "",
 };
 
 const departmentOptions: Array<{ value: Department; label: string }> = [
@@ -137,6 +149,12 @@ export function AccountProfileForm({
     contactEmail: initialProfile?.alumniProfile?.contactEmail ?? initialEmail ?? "",
     isPublic: initialIsPublic,
     acceptContact: initialProfile?.alumniProfile?.acceptContact ?? false,
+    skills: initialProfile?.alumniProfile?.skills ?? [],
+    portfolioUrl: initialProfile?.alumniProfile?.portfolioUrl ?? "",
+    gakuchika: initialProfile?.alumniProfile?.gakuchika ?? "",
+    entryTrigger: initialProfile?.alumniProfile?.entryTrigger ?? "",
+    interviewTip: initialProfile?.alumniProfile?.interviewTip ?? "",
+    usefulCoursework: initialProfile?.alumniProfile?.usefulCoursework ?? "",
   });
   const [companyRowIds, setCompanyRowIds] = useState<string[]>(() =>
     initialCompanyNames.map(() => createRowId()),
@@ -151,6 +169,7 @@ export function AccountProfileForm({
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [deepDiveOpen, setDeepDiveOpen] = useState(false);
 
   const canSubmitInitial = useMemo(() => {
     const enrollmentYear = Number(state.enrollmentYear);
@@ -275,6 +294,12 @@ export function AccountProfileForm({
           contactEmail: normalizedContactEmail,
           isPublic: isPublicToSave,
           acceptContact: isPublicToSave ? state.acceptContact : false,
+          skills: state.skills.map((s) => s.trim()).filter((s) => s.length > 0),
+          portfolioUrl: state.portfolioUrl.trim(),
+          gakuchika: state.gakuchika.trim(),
+          entryTrigger: state.entryTrigger,
+          interviewTip: state.interviewTip.trim(),
+          usefulCoursework: state.usefulCoursework.trim(),
         }),
       });
 
@@ -519,11 +544,7 @@ export function AccountProfileForm({
             <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
               年制（学科から自動設定）
             </span>
-            <Select
-              id="profile-duration-years"
-              value={state.durationYears}
-              disabled
-            >
+            <Select id="profile-duration-years" value={state.durationYears} disabled>
               <option value="">学科を選択してください</option>
               <option value="1">1年制</option>
               <option value="2">2年制</option>
@@ -849,16 +870,256 @@ export function AccountProfileForm({
 
                 {/* Remarks / Message */}
                 <div className="space-y-1.5">
-                  <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-                    後輩へのメッセージ
-                  </span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                      後輩へひとこと
+                    </span>
+                    <p
+                      className={`text-[10px] ${state.remarks.length >= 50 ? "text-rose-500" : "text-stone-400 dark:text-stone-500"}`}
+                    >
+                      {state.remarks.length}/50
+                    </p>
+                  </div>
                   <textarea
                     value={state.remarks}
                     onChange={(event) => setField("remarks", event.target.value)}
+                    maxLength={50}
                     className="min-h-24 w-full rounded-xl border border-stone-200/80 bg-white px-3.5 py-2.5 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 hover:border-stone-300 focus:border-violet-400 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-700/60 dark:bg-stone-900/60 dark:text-stone-100 dark:placeholder:text-stone-500 dark:hover:border-stone-600 dark:focus:border-violet-500/60 dark:focus:shadow-[0_0_0_3px_rgba(139,92,246,0.12)]"
-                    placeholder="就活のアドバイスや、学校生活の思い出など自由に書いてください 🎓"
+                    placeholder="就活のアドバイスでも学生生活やるべきことでも！"
                     disabled={!canEditAlumniProfile}
                   />
+                </div>
+
+                <hr className="border-stone-100 dark:border-stone-800/60" />
+
+                {/* ── 後輩へのアドバイス (Deep Dive) ── */}
+                <div className="space-y-5">
+                  <button
+                    type="button"
+                    onClick={() => setDeepDiveOpen((prev) => !prev)}
+                    className="flex w-full items-center gap-2 text-left"
+                  >
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 text-sm dark:bg-amber-900/40">
+                      💡
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                        後輩へのアドバイス
+                      </h4>
+                      <p className="text-[10px] text-stone-500 dark:text-stone-400">
+                        任意 · 書くほど後輩の参考になります
+                      </p>
+                    </div>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className={`shrink-0 text-stone-400 transition-transform duration-200 ${deepDiveOpen ? "rotate-180" : ""}`}
+                    >
+                      <title>{deepDiveOpen ? "閉じる" : "開く"}</title>
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+
+                  {/* Collapsible content */}
+                  <div
+                    className={`space-y-5 overflow-hidden transition-all duration-300 ease-in-out ${
+                      deepDiveOpen ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+                    }`}
+                  >
+                    {/* Skills */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                          評価された技術・資格（最大3つ）
+                        </span>
+                        <span className="text-[10px] text-stone-400 dark:text-stone-500">
+                          {state.skills.length}/3
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {state.skills.map((skill) => (
+                          <span
+                            key={skill}
+                            className="inline-flex items-center gap-1 rounded-lg bg-violet-100/80 px-2 py-1 text-[12px] font-semibold text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
+                          >
+                            {skill}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setState((prev) => ({
+                                  ...prev,
+                                  skills: prev.skills.filter((s) => s !== skill),
+                                }));
+                              }}
+                              disabled={!canEditAlumniProfile}
+                              className="ml-0.5 text-violet-400 hover:text-violet-700 dark:text-violet-500 dark:hover:text-violet-200"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                      {state.skills.length < 3 ? (
+                        <div className="flex gap-2">
+                          <Input
+                            id="profile-skill-input"
+                            placeholder="例: React, 基本情報技術者, AWS"
+                            disabled={!canEditAlumniProfile}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") {
+                                event.preventDefault();
+                                const target = event.target as HTMLInputElement;
+                                const value = target.value.trim();
+                                if (
+                                  value &&
+                                  state.skills.length < 3 &&
+                                  !state.skills.includes(value)
+                                ) {
+                                  setState((prev) => ({
+                                    ...prev,
+                                    skills: [...prev.skills, value],
+                                  }));
+                                  target.value = "";
+                                }
+                              }
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const input = document.getElementById(
+                                "profile-skill-input",
+                              ) as HTMLInputElement | null;
+                              const value = input?.value.trim();
+                              if (
+                                value &&
+                                state.skills.length < 3 &&
+                                !state.skills.includes(value)
+                              ) {
+                                setState((prev) => ({
+                                  ...prev,
+                                  skills: [...prev.skills, value],
+                                }));
+                                if (input) input.value = "";
+                              }
+                            }}
+                            disabled={!canEditAlumniProfile}
+                            className="shrink-0 rounded-lg border border-stone-300 px-3 text-xs font-semibold text-stone-600 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800"
+                          >
+                            追加
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+
+                    {/* Portfolio URL */}
+                    <label htmlFor="profile-portfolio-url" className="block space-y-1.5">
+                      <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                        ポートフォリオURL
+                      </span>
+                      <Input
+                        id="profile-portfolio-url"
+                        value={state.portfolioUrl}
+                        onChange={(event) => setField("portfolioUrl", event.target.value)}
+                        placeholder="https://your-portfolio.com"
+                        type="url"
+                        disabled={!canEditAlumniProfile}
+                      />
+                    </label>
+
+                    {/* Gakuchika */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                          学生時代に力を入れたこと
+                        </span>
+                        <p
+                          className={`text-[10px] ${state.gakuchika.length >= 200 ? "text-rose-500" : "text-stone-400 dark:text-stone-500"}`}
+                        >
+                          {state.gakuchika.length}/200
+                        </p>
+                      </div>
+                      <textarea
+                        value={state.gakuchika}
+                        onChange={(event) => setField("gakuchika", event.target.value)}
+                        maxLength={200}
+                        className="min-h-20 w-full rounded-xl border border-stone-200/80 bg-white px-3.5 py-2.5 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 hover:border-stone-300 focus:border-violet-400 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-700/60 dark:bg-stone-900/60 dark:text-stone-100 dark:placeholder:text-stone-500 dark:hover:border-stone-600 dark:focus:border-violet-500/60 dark:focus:shadow-[0_0_0_3px_rgba(139,92,246,0.12)]"
+                        placeholder="例: We部のプロジェクトでReactを使ったサイト制作をリーダーとして行いました"
+                        disabled={!canEditAlumniProfile}
+                      />
+                    </div>
+
+                    {/* Entry Trigger */}
+                    <label htmlFor="profile-entry-trigger" className="block space-y-1.5">
+                      <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                        内定企業へのエントリーのきっかけ
+                      </span>
+                      <Select
+                        id="profile-entry-trigger"
+                        value={state.entryTrigger}
+                        onChange={(event) => setField("entryTrigger", event.target.value)}
+                        disabled={!canEditAlumniProfile}
+                      >
+                        <option value="">選択してください</option>
+                        <option value="学校求人">学校求人</option>
+                        <option value="逆求人・スカウト">逆求人・スカウト</option>
+                        <option value="就活サイト">就活サイト</option>
+                        <option value="インターン経由">インターン経由</option>
+                        <option value="OB/OG紹介">OB/OG紹介</option>
+                        <option value="その他">その他</option>
+                      </Select>
+                    </label>
+
+                    {/* Interview Tip */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                          面接のワンポイント
+                        </span>
+                        <p
+                          className={`text-[10px] ${state.interviewTip.length >= 200 ? "text-rose-500" : "text-stone-400 dark:text-stone-500"}`}
+                        >
+                          {state.interviewTip.length}/200
+                        </p>
+                      </div>
+                      <textarea
+                        value={state.interviewTip}
+                        onChange={(event) => setField("interviewTip", event.target.value)}
+                        maxLength={200}
+                        className="min-h-20 w-full rounded-xl border border-stone-200/80 bg-white px-3.5 py-2.5 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 hover:border-stone-300 focus:border-violet-400 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-700/60 dark:bg-stone-900/60 dark:text-stone-100 dark:placeholder:text-stone-500 dark:hover:border-stone-600 dark:focus:border-violet-500/60 dark:focus:shadow-[0_0_0_3px_rgba(139,92,246,0.12)]"
+                        placeholder="例: ポートフォリオを持参して、実際に動くものを見せると話が弾みました"
+                        disabled={!canEditAlumniProfile}
+                      />
+                    </div>
+
+                    {/* Useful Coursework */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                          役立った授業・先生
+                        </span>
+                        <p
+                          className={`text-[10px] ${state.usefulCoursework.length >= 200 ? "text-rose-500" : "text-stone-400 dark:text-stone-500"}`}
+                        >
+                          {state.usefulCoursework.length}/200
+                        </p>
+                      </div>
+                      <textarea
+                        value={state.usefulCoursework}
+                        onChange={(event) => setField("usefulCoursework", event.target.value)}
+                        maxLength={200}
+                        className="min-h-20 w-full rounded-xl border border-stone-200/80 bg-white px-3.5 py-2.5 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 hover:border-stone-300 focus:border-violet-400 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-700/60 dark:bg-stone-900/60 dark:text-stone-100 dark:placeholder:text-stone-500 dark:hover:border-stone-600 dark:focus:border-violet-500/60 dark:focus:shadow-[0_0_0_3px_rgba(139,92,246,0.12)]"
+                        placeholder="例: ○○先生のWebフレームワーク演習がポートフォリオ制作にそのまま活かせました"
+                        disabled={!canEditAlumniProfile}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -866,33 +1127,34 @@ export function AccountProfileForm({
         </>
       ) : null}
 
-      {/* ─── Feedback & Submit ─── */}
-      {error ? (
-        <p className="rounded-xl border border-rose-200/80 bg-rose-50/80 px-3 py-2 text-xs text-rose-700 dark:border-rose-800/50 dark:bg-rose-950/30 dark:text-rose-300">
-          {error}
-        </p>
-      ) : null}
+      <div className="sticky bottom-0 -mx-1 bg-gradient-to-t from-white via-white to-white/0 px-1 pb-2 pt-4 dark:from-stone-950 dark:via-stone-950 dark:to-stone-950/0">
+        {error ? (
+          <p className="mb-2 rounded-xl border border-rose-200/80 bg-rose-50/80 px-3 py-2 text-xs text-rose-700 dark:border-rose-800/50 dark:bg-rose-950/30 dark:text-rose-300">
+            {error}
+          </p>
+        ) : null}
 
-      {message ? (
-        <p className="rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-xs text-emerald-700 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-300">
-          {message}
-        </p>
-      ) : null}
+        {message ? (
+          <p className="mb-2 rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-xs text-emerald-700 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-300">
+            {message}
+          </p>
+        ) : null}
 
-      <button
-        type="submit"
-        disabled={isSaving}
-        className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-stone-900 text-sm font-bold tracking-wide text-white shadow-lg shadow-stone-900/20 transition-all hover:bg-stone-800 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-100 dark:text-stone-900 dark:shadow-stone-100/10 dark:hover:bg-stone-200"
-      >
-        {isSaving ? (
-          <>
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white dark:border-stone-900/30 dark:border-t-stone-900" />
-            保存中…
-          </>
-        ) : (
-          "プロフィールを保存する"
-        )}
-      </button>
+        <button
+          type="submit"
+          disabled={isSaving}
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-stone-900 text-sm font-bold tracking-wide text-white shadow-lg shadow-stone-900/20 transition-all hover:bg-stone-800 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-100 dark:text-stone-900 dark:shadow-stone-100/10 dark:hover:bg-stone-200"
+        >
+          {isSaving ? (
+            <>
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white dark:border-stone-900/30 dark:border-t-stone-900" />
+              保存中…
+            </>
+          ) : (
+            "プロフィールを保存する"
+          )}
+        </button>
+      </div>
     </form>
   );
 }

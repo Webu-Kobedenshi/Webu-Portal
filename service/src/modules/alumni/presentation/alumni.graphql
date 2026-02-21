@@ -60,6 +60,12 @@ type AlumniProfile {
   remarks: String
   contactEmail: String
   avatarUrl: String
+  skills: [String!]!
+  portfolioUrl: String
+  gakuchika: String
+  entryTrigger: String
+  interviewTip: String
+  usefulCoursework: String
   isPublic: Boolean!
   acceptContact: Boolean!
   user: User!
@@ -82,6 +88,12 @@ input UpdateAlumniProfileInput {
   contactEmail: String
   isPublic: Boolean
   acceptContact: Boolean
+  skills: [String!]
+  portfolioUrl: String
+  gakuchika: String
+  entryTrigger: String
+  interviewTip: String
+  usefulCoursework: String
 }
 
 input InitialSettingsInput {

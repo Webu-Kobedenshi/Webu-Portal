@@ -29,6 +29,12 @@ type UpdateAlumniProfileInput = {
   contactEmail?: string;
   isPublic: boolean;
   acceptContact: boolean;
+  skills?: string[];
+  portfolioUrl?: string;
+  gakuchika?: string;
+  entryTrigger?: string;
+  interviewTip?: string;
+  usefulCoursework?: string;
 };
 
 type AlumniConnection = {
@@ -68,6 +74,12 @@ const alumniProfileSelect = {
   remarks: true,
   contactEmail: true,
   avatarUrl: true,
+  skills: true,
+  portfolioUrl: true,
+  gakuchika: true,
+  entryTrigger: true,
+  interviewTip: true,
+  usefulCoursework: true,
   isPublic: true,
   acceptContact: true,
   createdAt: true,
@@ -121,6 +133,12 @@ export class AlumniRepository {
       remarks: record.remarks,
       contactEmail: record.contactEmail,
       avatarUrl: (record as { avatarUrl?: string | null }).avatarUrl ?? null,
+      skills: (record as { skills?: string[] }).skills ?? [],
+      portfolioUrl: (record as { portfolioUrl?: string | null }).portfolioUrl ?? null,
+      gakuchika: (record as { gakuchika?: string | null }).gakuchika ?? null,
+      entryTrigger: (record as { entryTrigger?: string | null }).entryTrigger ?? null,
+      interviewTip: (record as { interviewTip?: string | null }).interviewTip ?? null,
+      usefulCoursework: (record as { usefulCoursework?: string | null }).usefulCoursework ?? null,
       isPublic: record.isPublic,
       acceptContact: record.acceptContact,
       createdAt: record.createdAt,
@@ -239,6 +257,12 @@ export class AlumniRepository {
           contactEmail: input.contactEmail,
           isPublic: input.isPublic,
           acceptContact: input.acceptContact,
+          skills: input.skills ?? [],
+          portfolioUrl: input.portfolioUrl,
+          gakuchika: input.gakuchika,
+          entryTrigger: input.entryTrigger,
+          interviewTip: input.interviewTip,
+          usefulCoursework: input.usefulCoursework,
         },
         update: {
           nickname: input.nickname,
@@ -248,6 +272,12 @@ export class AlumniRepository {
           contactEmail: input.contactEmail,
           isPublic: input.isPublic,
           acceptContact: input.acceptContact,
+          skills: input.skills ?? [],
+          portfolioUrl: input.portfolioUrl,
+          gakuchika: input.gakuchika,
+          entryTrigger: input.entryTrigger,
+          interviewTip: input.interviewTip,
+          usefulCoursework: input.usefulCoursework,
         },
         select: {
           id: true,

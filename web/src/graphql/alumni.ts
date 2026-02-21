@@ -38,6 +38,12 @@ const alumniListQuery = `
         contactEmail
         isPublic
         acceptContact
+        skills
+        portfolioUrl
+        gakuchika
+        entryTrigger
+        interviewTip
+        usefulCoursework
         createdAt
         updatedAt
       }
@@ -111,6 +117,82 @@ export async function fetchAlumniList(params: {
       alumniList: [] satisfies AlumniProfile[],
       totalCount: 0,
       hasNextPage: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+// ── Alumni Detail ──
+
+type AlumniDetailData = {
+  getAlumniDetail: AlumniProfile | null;
+};
+
+const alumniDetailQuery = `
+  query GetAlumniDetail($id: ID!) {
+    getAlumniDetail(id: $id) {
+      id
+      userId
+      nickname
+      avatarUrl
+      graduationYear
+      department
+      companyNames
+      remarks
+      contactEmail
+      isPublic
+      acceptContact
+      skills
+      portfolioUrl
+      gakuchika
+      entryTrigger
+      interviewTip
+      usefulCoursework
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export async function fetchAlumniDetail(id: string) {
+  const session = await getServerSession(authOptions);
+  const serviceToken = session?.serviceToken;
+  if (!serviceToken) {
+    return { alumni: null, error: "Authentication required" };
+  }
+
+  const endpoint = process.env.GRAPHQL_ENDPOINT ?? "http://localhost:4000/graphql";
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${serviceToken}`,
+      },
+      cache: "no-store",
+      body: JSON.stringify({
+        query: alumniDetailQuery,
+        variables: { id },
+      }),
+    });
+
+    const json = (await response.json()) as GraphQlResponse<AlumniDetailData>;
+
+    if (json.errors?.length) {
+      return {
+        alumni: null,
+        error: json.errors.map((item) => item.message).join(", "),
+      };
+    }
+
+    return {
+      alumni: json.data?.getAlumniDetail ?? null,
+      error: "",
+    };
+  } catch (error) {
+    return {
+      alumni: null,
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }

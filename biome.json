@@ -18,6 +18,9 @@
   "javascript": {
     "parser": {
       "unsafeParameterDecoratorsEnabled": true
+    },
+    "formatter": {
+      "quoteProperties": "preserve"
     }
   },
   "linter": {
