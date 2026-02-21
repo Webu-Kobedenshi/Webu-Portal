@@ -139,19 +139,22 @@ export function AlumniCard({ alumni }: AlumniCardProps) {
 
         {/* Skill tags — right side of avatar row */}
         {alumni.skills.length > 0 ? (
-          <div className="mb-1 flex flex-col items-end gap-1">
-            <div className="flex flex-wrap items-center justify-end gap-1">
-              <span className="text-[9px] font-semibold text-stone-400 dark:text-stone-500">
+          <div className="ml-3 flex min-w-0 flex-1 flex-col justify-end pb-0.5">
+            <div className="ml-auto flex max-w-full flex-col items-start gap-0.5">
+              <span className="shrink-0 text-[10px] font-semibold text-stone-400 dark:text-stone-500">
                 ⚔️ 就活武器
               </span>
-              {alumni.skills.slice(0, 3).map((skill) => (
-                <span
-                  key={skill}
-                  className="rounded-md bg-violet-100/80 px-1.5 py-0.5 text-[10px] font-semibold text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
-                >
-                  {skill}
-                </span>
-              ))}
+              <div className="flex w-full min-w-0 flex-nowrap justify-start gap-1 overflow-hidden">
+                {alumni.skills.slice(0, 3).map((skill) => (
+                  <span
+                    key={skill}
+                    title={skill}
+                    className="min-w-0 shrink truncate rounded-md bg-violet-100/80 px-1.5 py-0.5 text-[10px] font-semibold text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         ) : null}

@@ -170,6 +170,7 @@ export function AccountProfileForm({
   const [message, setMessage] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [deepDiveOpen, setDeepDiveOpen] = useState(false);
+  const [skillInput, setSkillInput] = useState("");
 
   const canSubmitInitial = useMemo(() => {
     const enrollmentYear = Number(state.enrollmentYear);
@@ -936,7 +937,7 @@ export function AccountProfileForm({
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-                          評価された技術・資格（最大3つ）
+                          評価された技術・資格・経験など（最大3つ）
                         </span>
                         <span className="text-[10px] text-stone-400 dark:text-stone-500">
                           {state.skills.length}/3
@@ -969,13 +970,16 @@ export function AccountProfileForm({
                         <div className="flex gap-2">
                           <Input
                             id="profile-skill-input"
-                            placeholder="例: React, 基本情報技術者, AWS"
+                            placeholder="例: React (15文字以内)"
+                            maxLength={15}
+                            value={skillInput}
+                            onChange={(e) => setSkillInput(e.target.value)}
                             disabled={!canEditAlumniProfile}
                             onKeyDown={(event) => {
+                              if (event.nativeEvent.isComposing) return;
                               if (event.key === "Enter") {
                                 event.preventDefault();
-                                const target = event.target as HTMLInputElement;
-                                const value = target.value.trim();
+                                const value = skillInput.trim().slice(0, 15);
                                 if (
                                   value &&
                                   state.skills.length < 3 &&
@@ -985,7 +989,7 @@ export function AccountProfileForm({
                                     ...prev,
                                     skills: [...prev.skills, value],
                                   }));
-                                  target.value = "";
+                                  setSkillInput("");
                                 }
                               }
                             }}
@@ -993,10 +997,7 @@ export function AccountProfileForm({
                           <button
                             type="button"
                             onClick={() => {
-                              const input = document.getElementById(
-                                "profile-skill-input",
-                              ) as HTMLInputElement | null;
-                              const value = input?.value.trim();
+                              const value = skillInput.trim().slice(0, 15);
                               if (
                                 value &&
                                 state.skills.length < 3 &&
@@ -1006,7 +1007,7 @@ export function AccountProfileForm({
                                   ...prev,
                                   skills: [...prev.skills, value],
                                 }));
-                                if (input) input.value = "";
+                                setSkillInput("");
                               }
                             }}
                             disabled={!canEditAlumniProfile}
