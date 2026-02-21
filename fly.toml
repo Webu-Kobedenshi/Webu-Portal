@@ -1,5 +1,5 @@
 app = "webu-portal-service-rion0910"
-primary_region = "iad"
+primary_region = "nrt"
 
 [build]
   dockerfile = "service/Dockerfile.fly"
@@ -27,3 +27,7 @@ primary_region = "iad"
     type = "requests"
     soft_limit = 50
     hard_limit = 100
+
+[vm]
+  size = "shared-cpu-1x"
+  memory = "512mb"
