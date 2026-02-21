@@ -34,7 +34,7 @@ type AccountProfileFormState = {
   name: string;
   studentId: string;
   enrollmentYear: string;
-  durationYears: "" | "2" | "3" | "4";
+  durationYears: "" | "1" | "2" | "3" | "4";
   department: Department | "";
   nickname: string;
   companyNames: string[];
@@ -59,29 +59,45 @@ const defaultState: AccountProfileFormState = {
 };
 
 const departmentOptions: Array<{ value: Department; label: string }> = [
-  { value: "IT_EXPERT", label: "ITエキスパート" },
-  { value: "IT_SPECIALIST", label: "ITスペシャリスト" },
-  { value: "INFORMATION_PROCESS", label: "情報処理" },
-  { value: "PROGRAMMING", label: "プログラミング" },
-  { value: "AI_SYSTEM", label: "AIシステム開発" },
-  { value: "ADVANCED_STUDIES", label: "総合研究科" },
-  { value: "INFO_BUSINESS", label: "情報ビジネス" },
-  { value: "INFO_ENGINEERING", label: "情報工学" },
-  { value: "GAME_RESEARCH", label: "ゲーム開発研究" },
-  { value: "GAME_ENGINEER", label: "ゲームエンジニア" },
-  { value: "GAME_SOFTWARE", label: "ゲーム制作" },
-  { value: "ESPORTS", label: "esportsエンジニア" },
-  { value: "CG_ANIMATION", label: "CGアニメーション" },
-  { value: "DIGITAL_ANIME", label: "デジタルアニメ" },
-  { value: "GRAPHIC_DESIGN", label: "グラフィックデザイン" },
-  { value: "INDUSTRIAL_DESIGN", label: "インダストリアルデザイン" },
-  { value: "ARCHITECTURAL", label: "建築" },
-  { value: "SOUND_CREATE", label: "サウンドクリエイト" },
-  { value: "SOUND_TECHNIQUE", label: "サウンドテクニック" },
-  { value: "VOICE_ACTOR", label: "声優" },
-  { value: "INTERNATIONAL_COMM", label: "国際コミュニケーション" },
-  { value: "OTHERS", label: "その他" },
+  { value: "IT_EXPERT", label: "ITエキスパート（4年制）" },
+  { value: "IT_SPECIALIST", label: "ITスペシャリスト（3年制）" },
+  { value: "INFORMATION_PROCESS", label: "情報処理（2年制）" },
+  { value: "PROGRAMMING", label: "プログラミング（2年制）" },
+  { value: "AI_SYSTEM", label: "AIシステム開発（2年制）" },
+  { value: "ADVANCED_STUDIES", label: "総合研究科（1年制）" },
+  { value: "INFO_BUSINESS", label: "情報ビジネス（2年制）" },
+  { value: "INFO_ENGINEERING", label: "情報工学（2年制）" },
+  { value: "GAME_RESEARCH", label: "ゲーム開発研究（4年制）" },
+  { value: "GAME_ENGINEER", label: "ゲームエンジニア（3年制）" },
+  { value: "GAME_SOFTWARE", label: "ゲーム制作（2年制）" },
+  { value: "ESPORTS", label: "esportsエンジニア（2年制）" },
+  { value: "CG_ANIMATION", label: "CGアニメーション（2年制）" },
+  { value: "DIGITAL_ANIME", label: "デジタルアニメ（2年制）" },
+  { value: "GRAPHIC_DESIGN", label: "グラフィックデザイン（2年制）" },
+  { value: "INDUSTRIAL_DESIGN", label: "インダストリアルデザイン（2年制）" },
+  { value: "ARCHITECTURAL", label: "建築（2年制）" },
+  { value: "SOUND_CREATE", label: "サウンドクリエイト（2年制）" },
+  { value: "SOUND_TECHNIQUE", label: "サウンドテクニック（2年制）" },
+  { value: "VOICE_ACTOR", label: "声優（2年制）" },
+  { value: "INTERNATIONAL_COMM", label: "国際コミュニケーション（2年制）" },
+  { value: "OTHERS", label: "その他（2年制）" },
 ];
+
+/** 学科から修業年数を導出する */
+function getDurationYears(department: Department): "1" | "2" | "3" | "4" {
+  switch (department) {
+    case "IT_EXPERT":
+    case "GAME_RESEARCH":
+      return "4";
+    case "IT_SPECIALIST":
+    case "GAME_ENGINEER":
+      return "3";
+    case "ADVANCED_STUDIES":
+      return "1";
+    default:
+      return "2";
+  }
+}
 
 function createRowId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -144,7 +160,7 @@ export function AccountProfileForm({
       Number.isFinite(enrollmentYear) &&
       enrollmentYear >= 2000 &&
       enrollmentYear <= 2100 &&
-      ["2", "3", "4"].includes(state.durationYears) &&
+      ["1", "2", "3", "4"].includes(state.durationYears) &&
       Boolean(state.department)
     );
   }, [state]);
@@ -204,7 +220,7 @@ export function AccountProfileForm({
     }
 
     if (!canSubmitInitial) {
-      const msg = "名前・学籍番号・入学年度・年制(2/3/4)・学科は必須です。";
+      const msg = "名前・学籍番号・入学年度・学科は必須です。";
       if (silent) {
         setAvatarError(msg);
       } else {
@@ -472,28 +488,6 @@ export function AccountProfileForm({
             />
           </label>
 
-          <label htmlFor="profile-duration-years" className="space-y-1.5">
-            <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-              年制
-            </span>
-            <Select
-              id="profile-duration-years"
-              value={state.durationYears}
-              onChange={(event) =>
-                setField(
-                  "durationYears",
-                  event.target.value as AccountProfileFormState["durationYears"],
-                )
-              }
-              required
-            >
-              <option value="">選択してください</option>
-              <option value="2">2年制</option>
-              <option value="3">3年制</option>
-              <option value="4">4年制</option>
-            </Select>
-          </label>
-
           <label htmlFor="profile-department" className="space-y-1.5">
             <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
               学科
@@ -501,9 +495,15 @@ export function AccountProfileForm({
             <Select
               id="profile-department"
               value={state.department}
-              onChange={(event) =>
-                setField("department", event.target.value as AccountProfileFormState["department"])
-              }
+              onChange={(event) => {
+                const dept = event.target.value as AccountProfileFormState["department"];
+                setField("department", dept);
+                if (dept) {
+                  setField("durationYears", getDurationYears(dept as Department));
+                } else {
+                  setField("durationYears", "");
+                }
+              }}
               required
             >
               <option value="">選択してください</option>
@@ -512,6 +512,23 @@ export function AccountProfileForm({
                   {item.label}
                 </option>
               ))}
+            </Select>
+          </label>
+
+          <label htmlFor="profile-duration-years" className="space-y-1.5">
+            <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+              年制（学科から自動設定）
+            </span>
+            <Select
+              id="profile-duration-years"
+              value={state.durationYears}
+              disabled
+            >
+              <option value="">学科を選択してください</option>
+              <option value="1">1年制</option>
+              <option value="2">2年制</option>
+              <option value="3">3年制</option>
+              <option value="4">4年制</option>
             </Select>
           </label>
         </div>

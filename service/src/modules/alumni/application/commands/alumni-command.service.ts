@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { resolveProfileVisibility } from "../../domain/alumni-profile-policy";
+import { getDurationYears } from "../../domain/department-duration";
 import { resolveRoleAndStatus } from "../../domain/user-role-transition";
 import { AlumniRepository } from "../../infrastructure/alumni.repository";
 import { StorageService } from "../../infrastructure/storage.service";
@@ -15,7 +16,7 @@ export class AlumniCommandService {
   constructor(
     @Inject(AlumniRepository) private readonly alumniRepository: AlumniRepository,
     @Inject(StorageService) private readonly storageService: StorageService,
-  ) {}
+  ) { }
 
   updateInitialSettings(userId: string, input: InitialSettingsInput): Promise<UserDto> {
     const name = input.name.trim();
@@ -33,19 +34,19 @@ export class AlumniCommandService {
       throw new BadRequestException("enrollmentYear is out of range");
     }
 
-    if (![2, 3, 4].includes(input.durationYears)) {
-      throw new BadRequestException("durationYears must be one of 2, 3, 4");
-    }
+    // 学科から年数を自動導出（フロントからの値は無視）
+    const durationYears = getDurationYears(input.department);
 
     const { role, status } = resolveRoleAndStatus({
       enrollmentYear: input.enrollmentYear,
-      durationYears: input.durationYears,
+      durationYears,
     });
 
     return this.alumniRepository.updateInitialSettings(userId, {
       ...input,
       name,
       studentId,
+      durationYears,
       role,
       status,
     });

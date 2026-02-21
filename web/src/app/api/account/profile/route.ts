@@ -116,7 +116,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           ok: false,
-          message: "name, studentId, enrollmentYear, durationYears, department are required",
+          message: "name, studentId, enrollmentYear, department are required",
         },
         { status: 400 },
       );
