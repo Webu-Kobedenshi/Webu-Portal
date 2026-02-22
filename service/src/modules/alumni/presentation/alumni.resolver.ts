@@ -14,7 +14,6 @@ import { AlumniQueryService } from "../application/queries/alumni-query.service"
 import type { Department } from "../domain/types/department";
 
 @Resolver()
-@UseGuards(GqlAuthGuard)
 export class AlumniResolver {
   constructor(
     @Inject(AlumniQueryService)
@@ -23,7 +22,15 @@ export class AlumniResolver {
     private readonly alumniCommandService: AlumniCommandService,
   ) {}
 
+  @Query("findUserByLinkedGmail")
+  findUserByLinkedGmail(@Args("gmail") gmail: string): Promise<UserDto | null> {
+    // ログイン前に auth.ts から呼ばれるため Guard をバイパスするか、Repository を利用する。
+    // QueryService にメソッドがないためリポジトリから引くか、QueryService に追加する。
+    return this.alumniQueryService.findUserByLinkedGmail(gmail);
+  }
+
   @Query("getAlumniList")
+  @UseGuards(GqlAuthGuard)
   getAlumniList(
     @Args("department", { nullable: true }) department?: Department,
     @Args("company", { nullable: true }) company?: string,
@@ -41,11 +48,13 @@ export class AlumniResolver {
   }
 
   @Query("getAlumniDetail")
+  @UseGuards(GqlAuthGuard)
   getAlumniDetail(@Args("id") id: string): Promise<AlumniProfileDto | null> {
     return this.alumniQueryService.getAlumniDetail(id);
   }
 
   @Query("getMyProfile")
+  @UseGuards(GqlAuthGuard)
   async getMyProfile(@CurrentUser() user: User): Promise<UserDto> {
     const userId = user.id;
     const profile = await this.alumniQueryService.getMyProfile(userId);
@@ -57,6 +66,7 @@ export class AlumniResolver {
   }
 
   @Mutation("updateInitialSettings")
+  @UseGuards(GqlAuthGuard)
   updateInitialSettings(
     @CurrentUser() user: User,
     @Args("input") input: InitialSettingsInput,
@@ -65,6 +75,7 @@ export class AlumniResolver {
   }
 
   @Mutation("updateAlumniProfile")
+  @UseGuards(GqlAuthGuard)
   updateAlumniProfile(
     @CurrentUser() user: User,
     @Args("input") input: UpdateAlumniProfileInput,
@@ -73,11 +84,13 @@ export class AlumniResolver {
   }
 
   @Mutation("deleteMyAccount")
+  @UseGuards(GqlAuthGuard)
   deleteMyAccount(@CurrentUser() user: User): Promise<boolean> {
     return this.alumniCommandService.deleteMyAccount(user.id);
   }
 
   @Mutation("getUploadUrl")
+  @UseGuards(GqlAuthGuard)
   getUploadUrl(
     @CurrentUser() user: User,
     @Args("fileName") fileName: string,
@@ -87,7 +100,20 @@ export class AlumniResolver {
   }
 
   @Mutation("updateAvatar")
+  @UseGuards(GqlAuthGuard)
   updateAvatar(@CurrentUser() user: User, @Args("url") url: string): Promise<AlumniProfileDto> {
     return this.alumniCommandService.updateAvatar(user.id, url);
+  }
+
+  @Mutation("linkGmail")
+  @UseGuards(GqlAuthGuard)
+  linkGmail(@CurrentUser() user: User, @Args("gmail") gmail: string): Promise<UserDto> {
+    return this.alumniCommandService.linkGmail(user.id, gmail);
+  }
+
+  @Mutation("unlinkGmail")
+  @UseGuards(GqlAuthGuard)
+  unlinkGmail(@CurrentUser() user: User): Promise<UserDto> {
+    return this.alumniCommandService.unlinkGmail(user.id);
   }
 }

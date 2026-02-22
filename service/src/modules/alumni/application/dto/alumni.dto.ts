@@ -6,6 +6,7 @@ export type UserDto = {
   email: string;
   name: string | null;
   studentId: string | null;
+  linkedGmail: string | null;
   role: UserRole;
   status: UserStatus;
   enrollmentYear: number | null;

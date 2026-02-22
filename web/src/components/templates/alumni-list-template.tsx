@@ -67,10 +67,15 @@ export function AlumniListTemplate({
                 We部運営
               </p>
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-stone-900 md:text-2xl dark:text-stone-100">
-              神戸電子専門学校 OB/OG一覧
+            <h1 className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-2.5">
+              <span className="bg-gradient-to-br from-violet-600 to-fuchsia-600 bg-clip-text text-2xl font-extrabold tracking-tight text-transparent md:text-3xl dark:from-violet-400 dark:to-fuchsia-400">
+                神デ・リンク
+              </span>
+              <span className="text-sm font-bold tracking-wider text-stone-500 dark:text-stone-400 sm:mb-0.5">
+                (Shin-De Link)
+              </span>
             </h1>
-            <p className="mt-1 text-[13px] text-stone-500 dark:text-stone-400">
+            <p className="mt-1.5 text-[13px] font-medium text-stone-500 dark:text-stone-400">
               あの企業に就職した先輩に話が聞けるかも！？
             </p>
           </div>

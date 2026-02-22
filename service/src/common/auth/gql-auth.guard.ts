@@ -39,6 +39,16 @@ export class GqlAuthGuard implements CanActivate {
       return existing;
     }
 
+    if (payload.email.toLowerCase().endsWith("@gmail.com")) {
+      const linkedUser = await this.prisma.user.findUnique({
+        where: { linkedGmail: payload.email.toLowerCase().trim() },
+      });
+
+      if (linkedUser) {
+        return linkedUser;
+      }
+    }
+
     return this.prisma.user.create({
       data: {
         email: payload.email,

@@ -48,6 +48,7 @@ const userBaseSelect = {
   email: true,
   name: true,
   studentId: true,
+  linkedGmail: true,
   role: true,
   status: true,
   enrollmentYear: true,
@@ -335,5 +336,24 @@ export class AlumniRepository {
     });
 
     return this.toAlumniProfileDto(record);
+  }
+
+  async findUserByLinkedGmail(gmail: string): Promise<UserDto | null> {
+    const record = await this.prisma.user.findUnique({
+      where: { linkedGmail: gmail.toLowerCase().trim() },
+      select: userSelect,
+    });
+
+    return record ? this.toUserDto(record) : null;
+  }
+
+  async updateLinkedGmail(userId: string, gmail: string | null): Promise<UserDto> {
+    const record = await this.prisma.user.update({
+      where: { id: userId },
+      data: { linkedGmail: gmail },
+      select: userSelect,
+    });
+
+    return this.toUserDto(record);
   }
 }

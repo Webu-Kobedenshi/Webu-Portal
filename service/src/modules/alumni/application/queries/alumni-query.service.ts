@@ -45,4 +45,8 @@ export class AlumniQueryService {
 
     return profile;
   }
+
+  findUserByLinkedGmail(gmail: string): Promise<UserDto | null> {
+    return this.alumniRepository.findUserByLinkedGmail(gmail);
+  }
 }

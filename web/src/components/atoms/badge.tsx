@@ -1,9 +1,10 @@
+import { Badge as ShadcnBadge } from "@/components/ui/badge";
 import { cn } from "@/lib/cn";
-import type { HTMLAttributes } from "react";
+import type { ComponentProps } from "react";
 
 type BadgeVariant = "default" | "secondary";
 
-type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
+export type BadgeProps = Omit<ComponentProps<typeof ShadcnBadge>, "variant"> & {
   variant?: BadgeVariant;
 };
 
@@ -16,9 +17,10 @@ const variantClass: Record<BadgeVariant, string> = {
 
 export function Badge({ className, variant = "secondary", ...props }: BadgeProps) {
   return (
-    <span
+    <ShadcnBadge
+      variant="outline"
       className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+        "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold hover:bg-transparent",
         variantClass[variant],
         className,
       )}

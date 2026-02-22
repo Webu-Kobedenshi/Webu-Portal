@@ -2,7 +2,7 @@ import { SignJWT } from "jose";
 import type { NextAuthOptions } from "next-auth";
 import Google from "next-auth/providers/google";
 
-const DEFAULT_AUTHORIZED_DOMAIN = "st.kobedenshi.ac.jp";
+const DEFAULT_AUTHORIZED_DOMAIN = "st.kobedenshi.ac.jp,gmail.com";
 
 type Role = "STUDENT" | "ALUMNI" | "ADMIN";
 
@@ -64,7 +64,11 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user }) {
-      return isAuthorizedEmail(user.email);
+      if (!isAuthorizedEmail(user.email)) {
+        return false;
+      }
+
+      return true;
     },
     async jwt({ token, user }) {
       if (user?.email) {
@@ -73,6 +77,10 @@ export const authOptions: NextAuthOptions = {
 
       if (user?.name) {
         token.name = user.name;
+      }
+
+      if (user?.id) {
+        token.userId = user.id;
       }
 
       const role = (token.role as Role | undefined) ?? "STUDENT";

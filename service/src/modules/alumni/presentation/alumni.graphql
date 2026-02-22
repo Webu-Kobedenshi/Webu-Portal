@@ -40,6 +40,7 @@ type User {
   email: String!
   name: String
   studentId: String
+  linkedGmail: String
   role: Role!
   status: UserStatus!
   enrollmentYear: Int
@@ -114,6 +115,7 @@ extend type Query {
   ): AlumniConnection!
   getMyProfile: User!
   getAlumniDetail(id: ID!): AlumniProfile
+  findUserByLinkedGmail(gmail: String!): User
 }
 
 extend type Mutation {
@@ -121,4 +123,6 @@ extend type Mutation {
   updateAlumniProfile(input: UpdateAlumniProfileInput!): AlumniProfile!
   updateAvatar(url: String!): AlumniProfile!
   deleteMyAccount: Boolean!
+  linkGmail(gmail: String!): User!
+  unlinkGmail: User!
 }

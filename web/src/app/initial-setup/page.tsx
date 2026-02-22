@@ -1,7 +1,5 @@
 import { AccountProfileForm } from "@/components/organisms/account-profile-form";
 import { fetchMyProfile } from "@/graphql/account";
-import Link from "next/link";
-
 export default async function InitialSetupPage() {
   const { profile } = await fetchMyProfile();
 
@@ -19,14 +17,9 @@ export default async function InitialSetupPage() {
           title="初期プロフィール入力"
           description="入力内容はアカウントページからいつでも編集・更新できます。"
           showPublicProfileFields={false}
+          showLinkedGmailField={false}
+          redirectOnSuccess="/"
         />
-
-        <Link
-          href="/"
-          className="mt-5 inline-flex h-10 items-center rounded-xl border border-stone-200/80 px-4 text-sm font-semibold text-stone-700 transition hover:bg-stone-50 dark:border-stone-700/60 dark:text-stone-300 dark:hover:bg-stone-800/60"
-        >
-          一覧へ戻る
-        </Link>
       </section>
     </main>
   );

@@ -157,4 +157,24 @@ export class AlumniCommandService {
 
     return updated;
   }
+
+  async linkGmail(userId: string, gmail: string): Promise<UserDto> {
+    const normalized = gmail.toLowerCase().trim();
+
+    if (!normalized.endsWith("@gmail.com")) {
+      throw new BadRequestException("引き継ぎアドレスは @gmail.com のみ登録できます。");
+    }
+
+    // 既に他のユーザーが使用していないか確認
+    const existing = await this.alumniRepository.findUserByLinkedGmail(normalized);
+    if (existing && existing.id !== userId) {
+      throw new BadRequestException("このGmailアドレスは既に他のアカウントに登録されています。");
+    }
+
+    return this.alumniRepository.updateLinkedGmail(userId, normalized);
+  }
+
+  async unlinkGmail(userId: string): Promise<UserDto> {
+    return this.alumniRepository.updateLinkedGmail(userId, null);
+  }
 }

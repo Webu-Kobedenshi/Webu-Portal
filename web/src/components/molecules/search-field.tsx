@@ -2,7 +2,13 @@
 
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
-import { Select } from "@/components/atoms/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/atoms/select";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -81,34 +87,37 @@ export function SearchField({
             学科で絞り込む
           </span>
           <Select
-            id="search-department"
-            name="department"
-            value={department}
-            onChange={(event) => setDepartment(event.target.value)}
+            value={department || "ALL"}
+            onValueChange={(val) => setDepartment(val === "ALL" ? "" : val)}
           >
-            <option value="">すべての学科</option>
-            <option value="IT_EXPERT">ITエキスパート</option>
-            <option value="IT_SPECIALIST">ITスペシャリスト</option>
-            <option value="INFORMATION_PROCESS">情報処理</option>
-            <option value="PROGRAMMING">プログラミング</option>
-            <option value="AI_SYSTEM">AIシステム開発</option>
-            <option value="ADVANCED_STUDIES">総合研究科</option>
-            <option value="INFO_BUSINESS">情報ビジネス</option>
-            <option value="INFO_ENGINEERING">情報工学</option>
-            <option value="GAME_RESEARCH">ゲーム開発研究</option>
-            <option value="GAME_ENGINEER">ゲームエンジニア</option>
-            <option value="GAME_SOFTWARE">ゲーム制作</option>
-            <option value="ESPORTS">esportsエンジニア</option>
-            <option value="CG_ANIMATION">CGアニメーション</option>
-            <option value="DIGITAL_ANIME">デジタルアニメ</option>
-            <option value="GRAPHIC_DESIGN">グラフィックデザイン</option>
-            <option value="INDUSTRIAL_DESIGN">インダストリアルデザイン</option>
-            <option value="ARCHITECTURAL">建築</option>
-            <option value="SOUND_CREATE">サウンドクリエイト</option>
-            <option value="SOUND_TECHNIQUE">サウンドテクニック</option>
-            <option value="VOICE_ACTOR">声優</option>
-            <option value="INTERNATIONAL_COMM">国際コミュニケーション</option>
-            <option value="OTHERS">その他</option>
+            <SelectTrigger id="search-department">
+              <SelectValue placeholder="すべての学科" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">すべての学科</SelectItem>
+              <SelectItem value="IT_EXPERT">ITエキスパート</SelectItem>
+              <SelectItem value="IT_SPECIALIST">ITスペシャリスト</SelectItem>
+              <SelectItem value="INFORMATION_PROCESS">情報処理</SelectItem>
+              <SelectItem value="PROGRAMMING">プログラミング</SelectItem>
+              <SelectItem value="AI_SYSTEM">AIシステム開発</SelectItem>
+              <SelectItem value="ADVANCED_STUDIES">総合研究科</SelectItem>
+              <SelectItem value="INFO_BUSINESS">情報ビジネス</SelectItem>
+              <SelectItem value="INFO_ENGINEERING">情報工学</SelectItem>
+              <SelectItem value="GAME_RESEARCH">ゲーム開発研究</SelectItem>
+              <SelectItem value="GAME_ENGINEER">ゲームエンジニア</SelectItem>
+              <SelectItem value="GAME_SOFTWARE">ゲーム制作</SelectItem>
+              <SelectItem value="ESPORTS">esportsエンジニア</SelectItem>
+              <SelectItem value="CG_ANIMATION">CGアニメーション</SelectItem>
+              <SelectItem value="DIGITAL_ANIME">デジタルアニメ</SelectItem>
+              <SelectItem value="GRAPHIC_DESIGN">グラフィックデザイン</SelectItem>
+              <SelectItem value="INDUSTRIAL_DESIGN">インダストリアルデザイン</SelectItem>
+              <SelectItem value="ARCHITECTURAL">建築</SelectItem>
+              <SelectItem value="SOUND_CREATE">サウンドクリエイト</SelectItem>
+              <SelectItem value="SOUND_TECHNIQUE">サウンドテクニック</SelectItem>
+              <SelectItem value="VOICE_ACTOR">声優</SelectItem>
+              <SelectItem value="INTERNATIONAL_COMM">国際コミュニケーション</SelectItem>
+              <SelectItem value="OTHERS">その他</SelectItem>
+            </SelectContent>
           </Select>
         </label>
 
@@ -146,15 +155,15 @@ export function SearchField({
           <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
             表示件数
           </span>
-          <Select
-            id="search-page-size"
-            name="pageSize"
-            value={pageSize}
-            onChange={(event) => setPageSize(event.target.value)}
-          >
-            <option value="10">10件</option>
-            <option value="20">20件</option>
-            <option value="50">50件</option>
+          <Select value={pageSize} onValueChange={setPageSize}>
+            <SelectTrigger id="search-page-size">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10件</SelectItem>
+              <SelectItem value="20">20件</SelectItem>
+              <SelectItem value="50">50件</SelectItem>
+            </SelectContent>
           </Select>
         </label>
 

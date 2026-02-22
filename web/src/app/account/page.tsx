@@ -72,7 +72,7 @@ export default async function AccountPage() {
 
         {/* Avatar + identity */}
         <div className="relative px-5 pb-5 md:px-6 md:pb-6">
-          <div className="-mt-12 flex items-end gap-4">
+          <div className="-mt-12">
             {avatarUrl ? (
               <img
                 src={avatarUrl}
@@ -86,7 +86,10 @@ export default async function AccountPage() {
                 {initial}
               </div>
             )}
-            <div className="mb-1 min-w-0 flex-1">
+          </div>
+
+          <div className="mt-3 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+            <div className="min-w-0 flex-1">
               <h1 className="truncate text-xl font-extrabold text-stone-900 dark:text-stone-100">
                 {displayName}
               </h1>
@@ -95,11 +98,13 @@ export default async function AccountPage() {
               </p>
             </div>
             {role ? (
-              <span
-                className={`mb-1.5 shrink-0 rounded-full bg-gradient-to-r ${gradient} px-3 py-1 text-[11px] font-bold text-white shadow-sm`}
-              >
-                {roleLabel[role]}
-              </span>
+              <div className="shrink-0">
+                <span
+                  className={`inline-block rounded-full bg-gradient-to-r ${gradient} px-3 py-1 text-[11px] font-bold text-white shadow-sm`}
+                >
+                  {roleLabel[role]}
+                </span>
+              </div>
             ) : null}
           </div>
 

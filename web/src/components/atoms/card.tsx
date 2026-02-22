@@ -1,11 +1,10 @@
+import { Card as ShadcnCard } from "@/components/ui/card";
 import { cn } from "@/lib/cn";
-import type { HTMLAttributes } from "react";
+import type { ComponentProps } from "react";
 
-type CardProps = HTMLAttributes<HTMLDivElement>;
-
-export function Card({ className, ...props }: CardProps) {
+export function Card({ className, ...props }: ComponentProps<typeof ShadcnCard>) {
   return (
-    <article
+    <ShadcnCard
       className={cn("liquid-glass rounded-2xl p-5 transition-all duration-300", className)}
       {...props}
     />

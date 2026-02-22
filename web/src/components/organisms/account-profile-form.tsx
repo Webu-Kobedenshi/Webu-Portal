@@ -2,8 +2,16 @@
 
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
-import { Select } from "@/components/atoms/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/atoms/select";
+import { Textarea } from "@/components/atoms/textarea";
 import type { AlumniProfile, Department, UserStatus } from "@/graphql/types";
+import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 
 type Role = "STUDENT" | "ALUMNI" | "ADMIN";
@@ -13,6 +21,7 @@ type InitialProfile = {
   email: string;
   name: string | null;
   studentId: string | null;
+  linkedGmail: string | null;
   role: Role;
   status: UserStatus;
   enrollmentYear: number | null;
@@ -28,6 +37,9 @@ type AccountProfileFormProps = {
   title?: string;
   description?: string;
   showPublicProfileFields?: boolean;
+  showLinkedGmailField?: boolean;
+  onSuccess?: () => void;
+  redirectOnSuccess?: string;
 };
 
 type AccountProfileFormState = {
@@ -126,13 +138,21 @@ export function AccountProfileForm({
   title = "プロフィール・公開情報",
   description = "初期設定で入力した項目を更新できます。公開する内定先情報もここで管理します。",
   showPublicProfileFields = true,
+  showLinkedGmailField = true,
+  onSuccess,
+  redirectOnSuccess,
 }: AccountProfileFormProps) {
+  const router = useRouter();
   const initialCompanyNames = initialProfile?.alumniProfile?.companyNames?.length
     ? [...initialProfile.alumniProfile.companyNames]
     : [];
   const initialAvatarUrl = initialProfile?.alumniProfile?.avatarUrl ?? null;
   const initialIsPublic =
     (initialProfile?.alumniProfile?.isPublic ?? false) && initialCompanyNames.length > 0;
+
+  const currentUserEmail = initialProfile?.email ?? initialEmail ?? "";
+  const isSchoolEmail = currentUserEmail.endsWith("@st.kobedenshi.ac.jp");
+  const shouldShowLinkedGmailField = showLinkedGmailField && isSchoolEmail;
 
   const [state, setState] = useState<AccountProfileFormState>({
     ...defaultState,
@@ -165,11 +185,20 @@ export function AccountProfileForm({
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState("");
   const [avatarMessage, setAvatarMessage] = useState("");
+  const [linkedGmailInput, setLinkedGmailInput] = useState("");
+  const [currentLinkedGmail, setCurrentLinkedGmail] = useState<string | null>(
+    initialProfile?.linkedGmail ?? null,
+  );
+  const [isLinkingGmail, setIsLinkingGmail] = useState(false);
+  const [linkedGmailError, setLinkedGmailError] = useState("");
+  const [linkedGmailMessage, setLinkedGmailMessage] = useState("");
+
   const [hasAlumniProfile, setHasAlumniProfile] = useState(Boolean(initialProfile?.alumniProfile));
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [deepDiveOpen, setDeepDiveOpen] = useState(false);
+  const [loginInfoOpen, setLoginInfoOpen] = useState(false);
   const [skillInput, setSkillInput] = useState("");
 
   const canSubmitInitial = useMemo(() => {
@@ -326,6 +355,13 @@ export function AccountProfileForm({
         } else {
           setMessage("保存しました。初期情報を更新しました。");
         }
+        if (onSuccess) {
+          onSuccess();
+        }
+        if (redirectOnSuccess) {
+          router.push(redirectOnSuccess);
+          router.refresh();
+        }
       }
 
       return true;
@@ -445,6 +481,72 @@ export function AccountProfileForm({
     }
   };
 
+  const handleLinkGmail = async () => {
+    setLinkedGmailError("");
+    setLinkedGmailMessage("");
+
+    const email = linkedGmailInput.trim().toLowerCase();
+    if (!email) {
+      setLinkedGmailError("Gmailアドレスを入力してください");
+      return;
+    }
+
+    if (!email.endsWith("@gmail.com")) {
+      setLinkedGmailError("有効な @gmail.com アドレスを指定してください");
+      return;
+    }
+
+    setIsLinkingGmail(true);
+    try {
+      const response = await fetch("/api/account/gmail", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ gmail: email }),
+      });
+
+      const json = await response.json();
+      if (!response.ok || !json.ok) {
+        throw new Error(json.message || "Gmail連携に失敗しました");
+      }
+
+      setCurrentLinkedGmail(email);
+      setLinkedGmailInput("");
+      setLinkedGmailMessage("引き継ぎGmailアドレスを登録しました");
+    } catch (err) {
+      setLinkedGmailError(err instanceof Error ? err.message : "サーバーエラーが発生しました");
+    } finally {
+      setIsLinkingGmail(false);
+    }
+  };
+
+  const handleUnlinkGmail = async () => {
+    if (!confirm("引き継ぎGmailアドレスの登録を解除します。よろしいですか？")) {
+      return;
+    }
+
+    setLinkedGmailError("");
+    setLinkedGmailMessage("");
+    setIsLinkingGmail(true);
+
+    try {
+      const response = await fetch("/api/account/gmail", {
+        method: "DELETE",
+      });
+
+      const json = await response.json();
+      if (!response.ok || !json.ok) {
+        throw new Error(json.message || "Gmail連携の解除に失敗しました");
+      }
+
+      setCurrentLinkedGmail(null);
+      setLinkedGmailMessage("引き継ぎGmailアドレスの登録を解除しました");
+    } catch (err) {
+      setLinkedGmailError(err instanceof Error ? err.message : "サーバーエラーが発生しました");
+    } finally {
+      setIsLinkingGmail(false);
+    }
+  };
+
   return (
     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
       {/* ─── Section 1: 基本情報 ─── */}
@@ -519,10 +621,11 @@ export function AccountProfileForm({
               学科
             </span>
             <Select
-              id="profile-department"
-              value={state.department}
-              onChange={(event) => {
-                const dept = event.target.value as AccountProfileFormState["department"];
+              value={state.department || "UNSELECTED"}
+              onValueChange={(val) => {
+                const dept = (
+                  val === "UNSELECTED" ? "" : val
+                ) as AccountProfileFormState["department"];
                 setField("department", dept);
                 if (dept) {
                   setField("durationYears", getDurationYears(dept as Department));
@@ -532,12 +635,17 @@ export function AccountProfileForm({
               }}
               required
             >
-              <option value="">選択してください</option>
-              {departmentOptions.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
+              <SelectTrigger id="profile-department">
+                <SelectValue placeholder="選択してください" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="UNSELECTED">選択してください</SelectItem>
+                {departmentOptions.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           </label>
 
@@ -545,16 +653,147 @@ export function AccountProfileForm({
             <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
               年制（学科から自動設定）
             </span>
-            <Select id="profile-duration-years" value={state.durationYears} disabled>
-              <option value="">学科を選択してください</option>
-              <option value="1">1年制</option>
-              <option value="2">2年制</option>
-              <option value="3">3年制</option>
-              <option value="4">4年制</option>
+            <Select value={state.durationYears || "UNSELECTED"} disabled>
+              <SelectTrigger id="profile-duration-years">
+                <SelectValue placeholder="学科を選択してください" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="UNSELECTED">学科を選択してください</SelectItem>
+                <SelectItem value="1">1年制</SelectItem>
+                <SelectItem value="2">2年制</SelectItem>
+                <SelectItem value="3">3年制</SelectItem>
+                <SelectItem value="4">4年制</SelectItem>
+              </SelectContent>
             </Select>
           </label>
         </div>
       </section>
+
+      {/* ─── Section 2: アカウント・ログイン引き継ぎ ─── */}
+      {shouldShowLinkedGmailField ? (
+        <section className="rounded-2xl border border-stone-200/90 bg-white p-5 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.25)] dark:border-stone-800/80 dark:bg-stone-900/40">
+          <button
+            type="button"
+            onClick={() => setLoginInfoOpen((prev) => !prev)}
+            className="flex w-full items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-sm dark:bg-emerald-900/40">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-emerald-600 dark:text-emerald-400"
+                >
+                  <title>アカウント連携</title>
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+              </span>
+              <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                卒業後のログイン情報
+              </h3>
+            </div>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={`shrink-0 text-stone-400 transition-transform duration-200 ${loginInfoOpen ? "rotate-180" : ""}`}
+            >
+              <title>{loginInfoOpen ? "閉じる" : "開く"}</title>
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              loginInfoOpen ? "mt-4 max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+            }`}
+          >
+            <div className="rounded-xl border border-stone-100 bg-stone-50/50 p-4 dark:border-stone-800/60 dark:bg-stone-900/40">
+              <p className="text-xs text-stone-600 dark:text-stone-400 mb-4 leading-relaxed">
+                学校のアカウント（
+                <code className="text-[11px] font-semibold text-rose-500 bg-rose-50 dark:bg-rose-950/30 px-1 py-0.5 rounded">
+                  @st.kobedenshi.ac.jp
+                </code>
+                ）は卒業後に失効します。卒業後もこのプロフィールにアクセスして情報を更新できるように、あらかじめ個人のGmailアドレスを登録してください。
+              </p>
+
+              <div className="space-y-4">
+                {currentLinkedGmail ? (
+                  <div className="flex flex-col gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900/50 dark:bg-emerald-950/20 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <span className="block text-[10px] font-bold text-emerald-600 dark:text-emerald-500">
+                        登録済みの引き継ぎアドレス
+                      </span>
+                      <strong className="text-sm text-stone-900 dark:text-stone-100">
+                        {currentLinkedGmail}
+                      </strong>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleUnlinkGmail}
+                      disabled={isLinkingGmail}
+                      className="inline-flex h-8 items-center justify-center rounded-md border border-stone-200 bg-white px-3 text-[11px] font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700/80"
+                    >
+                      登録を解除する
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="linked-gmail"
+                      className="block text-[11px] font-semibold text-stone-500 dark:text-stone-400"
+                    >
+                      個人のGmailアドレス
+                    </label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="linked-gmail"
+                        value={linkedGmailInput}
+                        onChange={(e) => setLinkedGmailInput(e.target.value)}
+                        placeholder="example@gmail.com"
+                        type="email"
+                        disabled={isLinkingGmail}
+                        className="flex-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleLinkGmail}
+                        disabled={isLinkingGmail || !linkedGmailInput}
+                        className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-stone-900 px-4 text-xs font-bold text-white transition-colors hover:bg-stone-800 disabled:opacity-50 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
+                      >
+                        {isLinkingGmail ? "登録中…" : "登録する"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {linkedGmailError ? (
+                  <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">
+                    {linkedGmailError}
+                  </p>
+                ) : null}
+                {linkedGmailMessage && !linkedGmailError ? (
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                    {linkedGmailMessage}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {showPublicProfileFields ? (
         <>
@@ -881,11 +1120,11 @@ export function AccountProfileForm({
                       {state.remarks.length}/50
                     </p>
                   </div>
-                  <textarea
+                  <Textarea
                     value={state.remarks}
                     onChange={(event) => setField("remarks", event.target.value)}
                     maxLength={50}
-                    className="min-h-24 w-full rounded-xl border border-stone-200/80 bg-white px-3.5 py-2.5 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 hover:border-stone-300 focus:border-violet-400 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-700/60 dark:bg-stone-900/60 dark:text-stone-100 dark:placeholder:text-stone-500 dark:hover:border-stone-600 dark:focus:border-violet-500/60 dark:focus:shadow-[0_0_0_3px_rgba(139,92,246,0.12)]"
+                    className="min-h-24"
                     placeholder="就活のアドバイスでも学生生活やるべきことでも！"
                     disabled={!canEditAlumniProfile}
                   />
@@ -1046,11 +1285,10 @@ export function AccountProfileForm({
                           {state.gakuchika.length}/200
                         </p>
                       </div>
-                      <textarea
+                      <Textarea
                         value={state.gakuchika}
                         onChange={(event) => setField("gakuchika", event.target.value)}
                         maxLength={200}
-                        className="min-h-20 w-full rounded-xl border border-stone-200/80 bg-white px-3.5 py-2.5 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 hover:border-stone-300 focus:border-violet-400 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-700/60 dark:bg-stone-900/60 dark:text-stone-100 dark:placeholder:text-stone-500 dark:hover:border-stone-600 dark:focus:border-violet-500/60 dark:focus:shadow-[0_0_0_3px_rgba(139,92,246,0.12)]"
                         placeholder="例: We部のプロジェクトでReactを使ったサイト制作をリーダーとして行いました"
                         disabled={!canEditAlumniProfile}
                       />
@@ -1062,18 +1300,24 @@ export function AccountProfileForm({
                         内定企業へのエントリーのきっかけ
                       </span>
                       <Select
-                        id="profile-entry-trigger"
-                        value={state.entryTrigger}
-                        onChange={(event) => setField("entryTrigger", event.target.value)}
+                        value={state.entryTrigger || "UNSELECTED"}
+                        onValueChange={(val) =>
+                          setField("entryTrigger", val === "UNSELECTED" ? "" : val)
+                        }
                         disabled={!canEditAlumniProfile}
                       >
-                        <option value="">選択してください</option>
-                        <option value="学校求人">学校求人</option>
-                        <option value="逆求人・スカウト">逆求人・スカウト</option>
-                        <option value="就活サイト">就活サイト</option>
-                        <option value="インターン経由">インターン経由</option>
-                        <option value="OB/OG紹介">OB/OG紹介</option>
-                        <option value="その他">その他</option>
+                        <SelectTrigger id="profile-entry-trigger">
+                          <SelectValue placeholder="選択してください" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="UNSELECTED">選択してください</SelectItem>
+                          <SelectItem value="学校求人">学校求人</SelectItem>
+                          <SelectItem value="逆求人・スカウト">逆求人・スカウト</SelectItem>
+                          <SelectItem value="就活サイト">就活サイト</SelectItem>
+                          <SelectItem value="インターン経由">インターン経由</SelectItem>
+                          <SelectItem value="OB/OG紹介">OB/OG紹介</SelectItem>
+                          <SelectItem value="その他">その他</SelectItem>
+                        </SelectContent>
                       </Select>
                     </label>
 
@@ -1089,11 +1333,10 @@ export function AccountProfileForm({
                           {state.interviewTip.length}/200
                         </p>
                       </div>
-                      <textarea
+                      <Textarea
                         value={state.interviewTip}
                         onChange={(event) => setField("interviewTip", event.target.value)}
                         maxLength={200}
-                        className="min-h-20 w-full rounded-xl border border-stone-200/80 bg-white px-3.5 py-2.5 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 hover:border-stone-300 focus:border-violet-400 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-700/60 dark:bg-stone-900/60 dark:text-stone-100 dark:placeholder:text-stone-500 dark:hover:border-stone-600 dark:focus:border-violet-500/60 dark:focus:shadow-[0_0_0_3px_rgba(139,92,246,0.12)]"
                         placeholder="例: ポートフォリオを持参して、実際に動くものを見せると話が弾みました"
                         disabled={!canEditAlumniProfile}
                       />
@@ -1111,11 +1354,10 @@ export function AccountProfileForm({
                           {state.usefulCoursework.length}/200
                         </p>
                       </div>
-                      <textarea
+                      <Textarea
                         value={state.usefulCoursework}
                         onChange={(event) => setField("usefulCoursework", event.target.value)}
                         maxLength={200}
-                        className="min-h-20 w-full rounded-xl border border-stone-200/80 bg-white px-3.5 py-2.5 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 hover:border-stone-300 focus:border-violet-400 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-700/60 dark:bg-stone-900/60 dark:text-stone-100 dark:placeholder:text-stone-500 dark:hover:border-stone-600 dark:focus:border-violet-500/60 dark:focus:shadow-[0_0_0_3px_rgba(139,92,246,0.12)]"
                         placeholder="例: ○○先生のWebフレームワーク演習がポートフォリオ制作にそのまま活かせました"
                         disabled={!canEditAlumniProfile}
                       />

@@ -69,6 +69,8 @@ model User {
   name      String?
   studentId String? @unique
 
+  linkedGmail String?    @unique // 卒業後の引き継ぎGmail
+
   role   Role       @default(STUDENT)
   status UserStatus @default(ENROLLED)
 

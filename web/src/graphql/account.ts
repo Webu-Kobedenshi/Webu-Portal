@@ -10,6 +10,7 @@ type GetMyProfileData = {
     email: string;
     name: string | null;
     studentId: string | null;
+    linkedGmail: string | null;
     role: Role;
     status: UserStatus;
     enrollmentYear: number | null;
@@ -31,6 +32,7 @@ const getMyProfileQuery = `
       email
       name
       studentId
+      linkedGmail
       role
       status
       enrollmentYear
