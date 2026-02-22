@@ -1,5 +1,6 @@
 "use client";
 
+import { LogoutButton } from "@/components/molecules/logout-button";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
 
@@ -62,28 +63,7 @@ export function AccountActions() {
       ) : null}
 
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-        <button
-          type="button"
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-stone-200 text-sm font-semibold text-stone-700 transition-all hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
-        >
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <title>ログアウト</title>
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-          ログアウト
-        </button>
+        <LogoutButton className="flex-1" />
         <button
           type="button"
           onClick={handleDelete}

@@ -1,5 +1,7 @@
+import { LogoutButton } from "@/components/molecules/logout-button";
 import { AccountProfileForm } from "@/components/organisms/account-profile-form";
 import { fetchMyProfile } from "@/graphql/account";
+
 export default async function InitialSetupPage() {
   const { profile } = await fetchMyProfile();
 
@@ -20,6 +22,12 @@ export default async function InitialSetupPage() {
           showLinkedGmailField={false}
           redirectOnSuccess="/"
         />
+
+        <div className="mt-8 border-t border-stone-200/80 pt-8 dark:border-stone-800/80">
+          <div className="flex justify-center">
+            <LogoutButton className="w-full sm:w-auto px-12" />
+          </div>
+        </div>
       </section>
     </main>
   );

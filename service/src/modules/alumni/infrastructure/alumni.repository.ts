@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { ConflictException, Inject, Injectable } from "@nestjs/common";
 import type {
   Prisma,
   Department as PrismaDepartment,
@@ -217,21 +217,28 @@ export class AlumniRepository {
   }
 
   async updateInitialSettings(userId: string, input: InitialSettingsInput): Promise<UserDto> {
-    const record = await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        name: input.name,
-        studentId: input.studentId,
-        enrollmentYear: input.enrollmentYear,
-        durationYears: input.durationYears,
-        department: this.toPrismaDepartment(input.department),
-        role: this.toPrismaRole(input.role),
-        status: this.toPrismaUserStatus(input.status),
-      },
-      select: userSelect,
-    });
+    try {
+      const record = await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          name: input.name,
+          studentId: input.studentId,
+          enrollmentYear: input.enrollmentYear,
+          durationYears: input.durationYears,
+          department: this.toPrismaDepartment(input.department),
+          role: this.toPrismaRole(input.role),
+          status: this.toPrismaUserStatus(input.status),
+        },
+        select: userSelect,
+      });
 
-    return this.toUserDto(record);
+      return this.toUserDto(record);
+    } catch (error) {
+      if (error && typeof error === "object" && "code" in error && error.code === "P2002") {
+        throw new ConflictException("この学籍番号はすでに他のユーザーに登録されています");
+      }
+      throw error;
+    }
   }
 
   async deleteUserById(userId: string): Promise<boolean> {

@@ -31,14 +31,6 @@ export class GqlAuthGuard implements CanActivate {
   }
 
   private async findOrCreateUser(payload: Required<Pick<AuthPayload, "email">> & AuthPayload) {
-    const existing = await this.prisma.user.findUnique({
-      where: { email: payload.email },
-    });
-
-    if (existing) {
-      return existing;
-    }
-
     if (payload.email.toLowerCase().endsWith("@gmail.com")) {
       const linkedUser = await this.prisma.user.findUnique({
         where: { linkedGmail: payload.email.toLowerCase().trim() },
@@ -47,6 +39,14 @@ export class GqlAuthGuard implements CanActivate {
       if (linkedUser) {
         return linkedUser;
       }
+    }
+
+    const existing = await this.prisma.user.findUnique({
+      where: { email: payload.email },
+    });
+
+    if (existing) {
+      return existing;
     }
 
     return this.prisma.user.create({
