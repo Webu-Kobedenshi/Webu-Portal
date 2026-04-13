@@ -77,62 +77,70 @@
 
 ## 4. Backend Architecture (Service)
 
-### 4.1 Layered Architecture & CQRS
+### 4.1 Layered Architecture, CQRS, and Light DDD
 
-レイヤードアーキテクチャを採用し、ビジネスロジックの肥大化を防ぐため「Command」と「Query」を分離する。
+レイヤードアーキテクチャ + CQRS を基本に、重要ユースケースから段階的に DDD を適用する（Light DDD）。
+現時点の最優先ユースケースは `updateAlumniProfile`。
 
 **Presentation Layer**
 
 - Resolvers
 - GraphQL エントリポイント
+- 認証ガード、Transport入出力のマッピング
+- 業務ルールは持たない
 
 **Application Layer**
 
-- **Commands:** 書き込み処理（登録・更新・削除）。バリデーションやトランザクションを含む
-- **Queries:** 読み取り処理。Prisma を使用して DTO を直接返す
+- **Commands:** 書き込み処理（登録・更新・削除）のユースケース調停
+- **Queries:** 読み取り処理のユースケース調停
+- トランザクション境界、例外マッピング、ドメイン/インフラ調整を担当
+- ビジネス不変条件（正規化や公開制約）は原則持たない
 
 **Domain Layer**
 
-- エンティティや共通のビジネスルール
-- Prisma Client の型に依存することを許容
+- エンティティ、バリューオブジェクト、ポリシー、ドメインサービス
+- ビジネス不変条件とルールの唯一の置き場
+- 文字列正規化、重複排除、公開制約などの業務ルールを実装
 
 **Infrastructure Layer**
 
-- PrismaService
-- 外部APIクライアント等
+- Prisma を使った永続化
+- 外部API/ストレージ連携
+- ドメイン判断は持たず、技術的実装に限定
 
 ### 4.2 Data Access
 
-- Prisma 7 をドメインモデルとして、生成型をそのまま利用
-- 開発スピードを優先する方針
+- Prisma 7 は永続化モデルとして利用し、ドメインモデルとは責務分離する
+- 読み取りでは select を使って必要フィールドのみ取得する
+- Repository で DTO へ整形し、Application へ返す
+- API 契約（GraphQL schema / DTO 互換性）を維持しながら段階移行する
 
 ## 5. Directory Structure
 
-```
-.
-├── web/ (Next.js)
-│   └── src/
-│       ├── components/
-│       │   ├── atoms/ # Wrapped shadcn/ui
-│       │   ├── molecules/
-│       │   ├── organisms/
-│       │   └── templates/
-│       ├── app/ # App Router pages
-│       └── graphql/ # Codegen-generated files
-└── service/ (NestJS)
-    └── src/
-        ├── modules/
-        │   └── alumni/
-        │       ├── presentation/ # Resolvers
-        │       ├── application/
-        │       │   ├── commands/ # Write logic
-        │       │   └── queries/ # Read logic
-        │       └── infrastructure/ # Prisma access
-        ├── common/
-        └── prisma/
-```
+- `web/src/components/atoms`: Wrapped shadcn/ui コンポーネント
+- `web/src/components/molecules`: 複数atomsの組み合わせ
+- `web/src/components/organisms`: 画面機能の主要ブロック
+- `web/src/components/templates`: ページ構造テンプレート
+- `web/src/app`: App Router ページ/ルートハンドラ
+- `web/src/graphql`: GraphQL クエリ・型連携
+
+- `service/src/modules/alumni/presentation`: Resolver・認証ガード適用・入出力マッピング
+- `service/src/modules/alumni/application/commands`: 書き込みユースケース調停
+- `service/src/modules/alumni/application/queries`: 読み取りユースケース調停
+- `service/src/modules/alumni/domain/entities`: Domain Entity
+- `service/src/modules/alumni/domain/value-objects`: Domain Value Object
+- `service/src/modules/alumni/domain/errors`: Domain Error
+- `service/src/modules/alumni/infrastructure`: Prisma 永続化・外部連携
+- `service/src/common`: 共通認証/基盤
+- `service/prisma`: Prisma schema と migration
 
 ## 6. Implementation Rules (For Copilot)
+
+**Architecture First**
+
+- 実装着手前に `Docs/Architecture.md` と `.github/copilot-instructions.md` の両方を確認すること
+- 両者に差分がある場合はこのドキュメントを優先し、同一PRで整合させること
+- 1PR 1ユースケースを基本に、段階的に DDD を適用すること
 
 **Type Safety**
 
@@ -145,6 +153,7 @@
 **CQRS**
 
 - AlumniService に全てのロジックを詰め込まず、AlumniCommandService と AlumniQueryService に分けること
+- Application 層は調停に集中し、業務ルールは Domain 層へ移譲すること
 
 **Tailwind 4**
 
@@ -173,3 +182,12 @@
 - 入力型を `application/dto/alumni.input.ts` に集約し、Resolver/Service の重複定義を削減
 - Repository の `select` / DTO 変換の重複を統合して保守性を改善
 - MinIO を使ったアバターアップロード（署名付きURL + URL保存）を実装
+
+## 9. Update Log (2026-04-13)
+
+- `alumni` モジュールで Light DDD 方針を明文化
+  - Domain 層へ Entity / Value Object を追加
+  - `updateAlumniProfile` の業務ルールを Domain に移譲
+  - `updateInitialSettings` / `linkGmail` の検証ロジックを Domain モデル経由へ移行
+- Domain Validation Error を導入し、Application で例外マッピングを統一
+- Domain / Application の単体テストを拡充（Query service test を追加）

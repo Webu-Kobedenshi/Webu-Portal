@@ -1,7 +1,8 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
-import { resolveProfileVisibility } from "../../domain/alumni-profile-policy";
-import { getDurationYears } from "../../domain/department-duration";
-import { resolveRoleAndStatus } from "../../domain/user-role-transition";
+import { AlumniProfileDraft } from "../../domain/entities/alumni-profile.entity";
+import { InitialSettingsDraft } from "../../domain/entities/initial-settings.entity";
+import { DomainValidationError } from "../../domain/errors/domain-validation.error";
+import { GmailAddress } from "../../domain/value-objects/gmail-address";
 import { AlumniRepository } from "../../infrastructure/alumni.repository";
 import { StorageService } from "../../infrastructure/storage.service";
 import type { AlumniProfileDto, UserDto } from "../dto/alumni.dto";
@@ -19,36 +20,25 @@ export class AlumniCommandService {
   ) {}
 
   updateInitialSettings(userId: string, input: InitialSettingsInput): Promise<UserDto> {
-    const name = input.name.trim();
-    if (!name) {
-      throw new BadRequestException("name is required");
+    let draft: InitialSettingsDraft;
+    try {
+      draft = InitialSettingsDraft.create(input);
+    } catch (error) {
+      if (error instanceof DomainValidationError) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
     }
 
-    const studentId = input.studentId.trim();
-    if (!studentId) {
-      throw new BadRequestException("studentId is required");
-    }
-
-    const currentYear = new Date().getFullYear();
-    if (input.enrollmentYear < 2000 || input.enrollmentYear > currentYear + 1) {
-      throw new BadRequestException("enrollmentYear is out of range");
-    }
-
-    // 学科から年数を自動導出（フロントからの値は無視）
-    const durationYears = getDurationYears(input.department);
-
-    const { role, status } = resolveRoleAndStatus({
-      enrollmentYear: input.enrollmentYear,
-      durationYears,
-    });
+    const normalized = draft.toData();
 
     return this.alumniRepository.updateInitialSettings(userId, {
       ...input,
-      name,
-      studentId,
-      durationYears,
-      role,
-      status,
+      name: normalized.name,
+      studentId: normalized.studentId,
+      durationYears: normalized.durationYears,
+      role: normalized.role,
+      status: normalized.status,
     });
   }
 
@@ -65,45 +55,31 @@ export class AlumniCommandService {
       throw new BadRequestException("User not found");
     }
 
-    const companyNames = Array.from(
-      new Set(input.companyNames.map((item) => item.trim()).filter((item) => item.length > 0)),
-    );
-
-    const { isPublic, acceptContact } = resolveProfileVisibility({
-      isPublic: input.isPublic,
-      acceptContact: input.acceptContact,
-    });
-    const contactEmail = input.contactEmail?.trim() || user.email;
-
-    if (isPublic && companyNames.length === 0) {
-      throw new BadRequestException(
-        "companyNames must contain at least one item when isPublic is true",
-      );
+    let draft: AlumniProfileDraft;
+    try {
+      draft = AlumniProfileDraft.create(input, user.email);
+    } catch (error) {
+      if (error instanceof DomainValidationError) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
     }
 
-    if (isPublic && !input.nickname?.trim()) {
-      throw new BadRequestException("nickname is required when isPublic is true");
-    }
-
-    // Deep-dive fields normalization
-    const skills = Array.from(
-      new Set((input.skills ?? []).map((s) => s.trim()).filter((s) => s.length > 0)),
-    ).slice(0, 3);
-    const portfolioUrl = input.portfolioUrl !== undefined ? input.portfolioUrl.trim() : undefined;
+    const normalized = draft.toData();
 
     return this.alumniRepository.upsertAlumniProfile(userId, {
       ...input,
-      companyNames,
-      contactEmail,
-      isPublic,
-      acceptContact: isPublic ? acceptContact : false,
-      skills,
-      portfolioUrl,
-      gakuchika: input.gakuchika !== undefined ? input.gakuchika.trim() : undefined,
-      entryTrigger: input.entryTrigger !== undefined ? input.entryTrigger.trim() : undefined,
-      interviewTip: input.interviewTip !== undefined ? input.interviewTip.trim() : undefined,
-      usefulCoursework:
-        input.usefulCoursework !== undefined ? input.usefulCoursework.trim() : undefined,
+      nickname: normalized.nickname,
+      companyNames: normalized.companyNames,
+      contactEmail: normalized.contactEmail,
+      isPublic: normalized.isPublic,
+      acceptContact: normalized.acceptContact,
+      skills: normalized.skills,
+      portfolioUrl: normalized.portfolioUrl,
+      gakuchika: normalized.gakuchika,
+      entryTrigger: normalized.entryTrigger,
+      interviewTip: normalized.interviewTip,
+      usefulCoursework: normalized.usefulCoursework,
     });
   }
 
@@ -159,11 +135,16 @@ export class AlumniCommandService {
   }
 
   async linkGmail(userId: string, gmail: string): Promise<UserDto> {
-    const normalized = gmail.toLowerCase().trim();
-
-    if (!normalized.endsWith("@gmail.com")) {
-      throw new BadRequestException("引き継ぎアドレスは @gmail.com のみ登録できます。");
+    let address: GmailAddress;
+    try {
+      address = GmailAddress.from(gmail);
+    } catch (error) {
+      if (error instanceof DomainValidationError) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
     }
+    const normalized = address.toString();
 
     // 既に他のユーザーが使用していないか確認
     const existing = await this.alumniRepository.findUserByLinkedGmail(normalized);
