@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/atoms/select";
+import { cn } from "@/lib/cn";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -33,7 +34,15 @@ export function SearchField({
   const [pageSize, setPageSize] = useState(String(initialPageSize));
   const [companyInput, setCompanyInput] = useState(initialCompany);
   const [company, setCompany] = useState(initialCompany);
+  const [isExpandedOnMobile, setIsExpandedOnMobile] = useState(() =>
+    Boolean(initialDepartment || initialCompany || initialGraduationYear),
+  );
   const canReset = Boolean(department || companyInput || graduationYear || pageSize !== "10");
+  const activeFilterCount =
+    Number(Boolean(department)) +
+    Number(Boolean(companyInput.trim())) +
+    Number(Boolean(graduationYear)) +
+    Number(pageSize !== "10");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -75,13 +84,54 @@ export function SearchField({
     setCompanyInput("");
     setCompany("");
     setGraduationYear("");
-    setPageSize("20");
+    setPageSize("10");
+    setIsExpandedOnMobile(false);
     router.replace(pathname, { scroll: false });
   };
 
   return (
     <form className="liquid-glass rounded-2xl p-4" onSubmit={(event) => event.preventDefault()}>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_120px_auto]">
+      <div className="flex items-center justify-between gap-2 md:hidden">
+        <p className="text-[12px] font-semibold text-stone-600 dark:text-stone-300">
+          絞り込み
+          <span className="ml-1 tabular-nums text-stone-400 dark:text-stone-500">
+            {activeFilterCount > 0 ? `(${activeFilterCount})` : ""}
+          </span>
+        </p>
+        <button
+          type="button"
+          onClick={() => setIsExpandedOnMobile((prev) => !prev)}
+          aria-expanded={isExpandedOnMobile}
+          aria-controls="search-filter-panel"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-500 transition-colors hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900/60 dark:text-stone-300 dark:hover:bg-stone-800"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={cn(
+              "shrink-0 transition-transform duration-200",
+              isExpandedOnMobile && "rotate-180",
+            )}
+          >
+            <title>{isExpandedOnMobile ? "閉じる" : "開く"}</title>
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </button>
+      </div>
+
+      <div
+        id="search-filter-panel"
+        className={cn(
+          "mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_120px_auto]",
+          !isExpandedOnMobile && "hidden md:grid",
+        )}
+      >
         <label htmlFor="search-department" className="space-y-1.5">
           <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
             学科で絞り込む

@@ -139,6 +139,22 @@ select option {
   background: #f8f7f4;
 }
 
+@media (max-width: 440px) {
+  [data-sonner-toaster] {
+    top: max(12px, env(safe-area-inset-top));
+    right: 10px;
+    left: 10px;
+    width: auto;
+  }
+
+  [data-sonner-toast] {
+    width: 100%;
+    max-width: 100%;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   select option {
     color: #1a1625;
