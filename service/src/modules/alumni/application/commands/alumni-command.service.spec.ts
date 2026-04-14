@@ -127,8 +127,6 @@ describe("AlumniCommandService", () => {
   it("throws BadRequestException for non-gmail address", async () => {
     const { service } = createService();
 
-    await expect(service.linkGmail("u1", "user@example.com")).rejects.toThrow(
-      BadRequestException,
-    );
+    await expect(service.linkGmail("u1", "user@example.com")).rejects.toThrow(BadRequestException);
   });
 });

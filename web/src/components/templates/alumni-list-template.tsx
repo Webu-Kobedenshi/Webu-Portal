@@ -1,4 +1,5 @@
 import { Badge } from "@/components/atoms/badge";
+import { ToastOnMount } from "@/components/atoms/toast-on-mount";
 import { SearchField } from "@/components/molecules/search-field";
 import { AccountBadge } from "@/components/organisms/account-badge";
 import { AlumniCard } from "@/components/organisms/alumni-card";
@@ -119,11 +120,7 @@ export function AlumniListTemplate({
         </Link>
       </section>
 
-      {error ? (
-        <section className="mt-4 rounded-xl border border-rose-200/80 bg-rose-50/80 p-4 text-[13px] font-medium text-rose-700 backdrop-blur dark:border-rose-800/50 dark:bg-rose-950/30 dark:text-rose-300">
-          {error}
-        </section>
-      ) : null}
+      {error ? <ToastOnMount variant="error" message={error} /> : null}
 
       <section className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {alumni.length > 0 ? (

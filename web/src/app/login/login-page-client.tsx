@@ -1,13 +1,16 @@
 "use client";
 
+import { showErrorToast, showSuccessToast } from "@/components/atoms/toast";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 export function LoginPageClient() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
   const error = searchParams.get("error");
   const accountDeleted = searchParams.get("accountDeleted");
+  const notifiedKeyRef = useRef<string | null>(null);
 
   const errorMessage =
     error === "OAuthSignin"
@@ -16,6 +19,23 @@ export function LoginPageClient() {
         ? "このアカウントはログイン許可対象外です。許可ドメイン（既定: @st.kobedenshi.ac.jp）でログインしてください。"
         : null;
 
+  useEffect(() => {
+    const notifyKey = `${errorMessage ?? ""}:${accountDeleted ?? ""}`;
+    if (notifiedKeyRef.current === notifyKey) {
+      return;
+    }
+
+    if (errorMessage) {
+      showErrorToast(errorMessage);
+    }
+
+    if (accountDeleted) {
+      showSuccessToast("アカウントを削除しました。");
+    }
+
+    notifiedKeyRef.current = notifyKey;
+  }, [errorMessage, accountDeleted]);
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md items-center px-6">
       <section className="w-full rounded-xl border border-zinc-200 p-6 shadow-sm dark:border-zinc-800">
@@ -23,18 +43,6 @@ export function LoginPageClient() {
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
           Googleアカウントでログインしてください。
         </p>
-
-        {errorMessage ? (
-          <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
-            {errorMessage}
-          </p>
-        ) : null}
-
-        {accountDeleted ? (
-          <p className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
-            アカウントを削除しました。
-          </p>
-        ) : null}
 
         <div className="mt-6 space-y-4">
           <div className="space-y-2">

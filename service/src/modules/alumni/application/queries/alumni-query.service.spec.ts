@@ -1,6 +1,6 @@
+import type { AlumniRepository } from "../../infrastructure/alumni.repository";
 import type { AlumniConnectionDto, AlumniProfileDto, UserDto } from "../dto/alumni.dto";
 import { AlumniQueryService } from "./alumni-query.service";
-import type { AlumniRepository } from "../../infrastructure/alumni.repository";
 
 function createUser(overrides?: Partial<UserDto>): UserDto {
   return {

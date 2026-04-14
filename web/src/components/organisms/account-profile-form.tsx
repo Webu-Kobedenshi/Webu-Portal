@@ -10,6 +10,9 @@ import {
   SelectValue,
 } from "@/components/atoms/select";
 import { Textarea } from "@/components/atoms/textarea";
+import { showErrorToast, showSuccessToast } from "@/components/atoms/toast";
+import { BasicProfileSection } from "@/components/organisms/account-profile/basic-profile-section";
+import { LinkedGmailSection } from "@/components/organisms/account-profile/linked-gmail-section";
 import type { AlumniProfile, Department, UserStatus } from "@/graphql/types";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
@@ -183,20 +186,14 @@ export function AccountProfileForm({
   const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
   const avatarFileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const [avatarError, setAvatarError] = useState("");
-  const [avatarMessage, setAvatarMessage] = useState("");
   const [linkedGmailInput, setLinkedGmailInput] = useState("");
   const [currentLinkedGmail, setCurrentLinkedGmail] = useState<string | null>(
     initialProfile?.linkedGmail ?? null,
   );
   const [isLinkingGmail, setIsLinkingGmail] = useState(false);
-  const [linkedGmailError, setLinkedGmailError] = useState("");
-  const [linkedGmailMessage, setLinkedGmailMessage] = useState("");
 
   const [hasAlumniProfile, setHasAlumniProfile] = useState(Boolean(initialProfile?.alumniProfile));
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState<string>("");
-  const [error, setError] = useState<string>("");
   const [deepDiveOpen, setDeepDiveOpen] = useState(false);
   const [loginInfoOpen, setLoginInfoOpen] = useState(false);
   const [skillInput, setSkillInput] = useState("");
@@ -263,18 +260,9 @@ export function AccountProfileForm({
     const silent = options?.silent ?? false;
     const forcePrivate = options?.forcePrivate ?? false;
 
-    if (!silent) {
-      setError("");
-      setMessage("");
-    }
-
     if (!canSubmitInitial) {
       const msg = "名前・学籍番号・入学年度・学科は必須です。";
-      if (silent) {
-        setAvatarError(msg);
-      } else {
-        setError(msg);
-      }
+      showErrorToast(msg);
       return false;
     }
 
@@ -286,21 +274,13 @@ export function AccountProfileForm({
 
     if (showPublicProfileFields && isPublicToSave && normalizedCompanyNames.length === 0) {
       const msg = "公開する場合は内定先・勤務先を1件以上入力してください。";
-      if (silent) {
-        setAvatarError(msg);
-      } else {
-        setError(msg);
-      }
+      showErrorToast(msg);
       return false;
     }
 
     if (showPublicProfileFields && isPublicToSave && !state.nickname.trim()) {
       const msg = "公開する場合は表示名を1文字以上入力してください。";
-      if (silent) {
-        setAvatarError(msg);
-      } else {
-        setError(msg);
-      }
+      showErrorToast(msg);
       return false;
     }
 
@@ -349,11 +329,11 @@ export function AccountProfileForm({
 
       if (!silent) {
         if (!showPublicProfileFields) {
-          setMessage("保存しました。初期情報を更新しました。");
+          showSuccessToast("保存しました。初期情報を更新しました。");
         } else if (json.alumniUpdated) {
-          setMessage("保存しました。初期情報と公開プロフィールを更新しました。");
+          showSuccessToast("保存しました。初期情報と公開プロフィールを更新しました。");
         } else {
-          setMessage("保存しました。初期情報を更新しました。");
+          showSuccessToast("保存しました。初期情報を更新しました。");
         }
         if (onSuccess) {
           onSuccess();
@@ -367,11 +347,7 @@ export function AccountProfileForm({
       return true;
     } catch (submitError) {
       const msg = submitError instanceof Error ? submitError.message : "更新に失敗しました";
-      if (silent) {
-        setAvatarError(msg);
-      } else {
-        setError(msg);
-      }
+      showErrorToast(msg);
       return false;
     } finally {
       setIsSaving(false);
@@ -384,16 +360,13 @@ export function AccountProfileForm({
   };
 
   const handleAvatarUpload = async () => {
-    setAvatarError("");
-    setAvatarMessage("");
-
     if (!selectedAvatarFile) {
-      setAvatarError("画像ファイルを選択してください。");
+      showErrorToast("画像ファイルを選択してください。");
       return;
     }
 
     if (!selectedAvatarFile.type.startsWith("image/")) {
-      setAvatarError("画像ファイルのみアップロードできます。");
+      showErrorToast("画像ファイルのみアップロードできます。");
       return;
     }
 
@@ -471,9 +444,9 @@ export function AccountProfileForm({
       if (avatarFileInputRef.current) {
         avatarFileInputRef.current.value = "";
       }
-      setAvatarMessage("プロフィール画像を更新しました。");
+      showSuccessToast("プロフィール画像を更新しました。");
     } catch (uploadError) {
-      setAvatarError(
+      showErrorToast(
         uploadError instanceof Error ? uploadError.message : "画像アップロードに失敗しました",
       );
     } finally {
@@ -482,17 +455,14 @@ export function AccountProfileForm({
   };
 
   const handleLinkGmail = async () => {
-    setLinkedGmailError("");
-    setLinkedGmailMessage("");
-
     const email = linkedGmailInput.trim().toLowerCase();
     if (!email) {
-      setLinkedGmailError("Gmailアドレスを入力してください");
+      showErrorToast("Gmailアドレスを入力してください");
       return;
     }
 
     if (!email.endsWith("@gmail.com")) {
-      setLinkedGmailError("有効な @gmail.com アドレスを指定してください");
+      showErrorToast("有効な @gmail.com アドレスを指定してください");
       return;
     }
 
@@ -511,9 +481,9 @@ export function AccountProfileForm({
 
       setCurrentLinkedGmail(email);
       setLinkedGmailInput("");
-      setLinkedGmailMessage("引き継ぎGmailアドレスを登録しました");
+      showSuccessToast("引き継ぎGmailアドレスを登録しました");
     } catch (err) {
-      setLinkedGmailError(err instanceof Error ? err.message : "サーバーエラーが発生しました");
+      showErrorToast(err instanceof Error ? err.message : "サーバーエラーが発生しました");
     } finally {
       setIsLinkingGmail(false);
     }
@@ -524,8 +494,6 @@ export function AccountProfileForm({
       return;
     }
 
-    setLinkedGmailError("");
-    setLinkedGmailMessage("");
     setIsLinkingGmail(true);
 
     try {
@@ -539,9 +507,9 @@ export function AccountProfileForm({
       }
 
       setCurrentLinkedGmail(null);
-      setLinkedGmailMessage("引き継ぎGmailアドレスの登録を解除しました");
+      showSuccessToast("引き継ぎGmailアドレスの登録を解除しました");
     } catch (err) {
-      setLinkedGmailError(err instanceof Error ? err.message : "サーバーエラーが発生しました");
+      showErrorToast(err instanceof Error ? err.message : "サーバーエラーが発生しました");
     } finally {
       setIsLinkingGmail(false);
     }
@@ -549,250 +517,37 @@ export function AccountProfileForm({
 
   return (
     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-      {/* ─── Section 1: 基本情報 ─── */}
-      <section className="rounded-2xl border border-stone-200/90 bg-white p-5 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.25)] dark:border-stone-800/80 dark:bg-stone-900/40">
-        <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100 text-sm dark:bg-violet-900/40">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-violet-600 dark:text-violet-400"
-            >
-              <title>基本情報</title>
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </span>
-          <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">基本情報</h3>
-          <span className="ml-auto rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
-            必須
-          </span>
-        </div>
+      <BasicProfileSection
+        name={state.name}
+        studentId={state.studentId}
+        enrollmentYear={state.enrollmentYear}
+        department={state.department}
+        durationYears={state.durationYears}
+        departmentOptions={departmentOptions}
+        onNameChange={(value) => setField("name", value)}
+        onStudentIdChange={(value) => setField("studentId", value)}
+        onEnrollmentYearChange={(value) => setField("enrollmentYear", value)}
+        onDepartmentChange={(dept) => {
+          setField("department", dept);
+          if (dept) {
+            setField("durationYears", getDurationYears(dept));
+          } else {
+            setField("durationYears", "");
+          }
+        }}
+      />
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <label htmlFor="profile-name" className="space-y-1.5 sm:col-span-2">
-            <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-              名前
-            </span>
-            <Input
-              id="profile-name"
-              value={state.name}
-              onChange={(event) => setField("name", event.target.value)}
-              placeholder="例: 山田 太郎"
-              required
-            />
-          </label>
-
-          <label htmlFor="profile-student-id" className="space-y-1.5">
-            <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-              学籍番号
-            </span>
-            <Input
-              id="profile-student-id"
-              value={state.studentId}
-              onChange={(event) => setField("studentId", event.target.value)}
-              placeholder="例: 24A1234"
-              required
-            />
-          </label>
-
-          <label htmlFor="profile-enrollment-year" className="space-y-1.5">
-            <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-              入学年度
-            </span>
-            <Input
-              id="profile-enrollment-year"
-              value={state.enrollmentYear}
-              onChange={(event) => setField("enrollmentYear", event.target.value)}
-              placeholder="例: 2024"
-              inputMode="numeric"
-              required
-            />
-          </label>
-
-          <label htmlFor="profile-department" className="space-y-1.5">
-            <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-              学科
-            </span>
-            <Select
-              value={state.department || "UNSELECTED"}
-              onValueChange={(val) => {
-                const dept = (
-                  val === "UNSELECTED" ? "" : val
-                ) as AccountProfileFormState["department"];
-                setField("department", dept);
-                if (dept) {
-                  setField("durationYears", getDurationYears(dept as Department));
-                } else {
-                  setField("durationYears", "");
-                }
-              }}
-              required
-            >
-              <SelectTrigger id="profile-department">
-                <SelectValue placeholder="選択してください" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="UNSELECTED">選択してください</SelectItem>
-                {departmentOptions.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </label>
-
-          <label htmlFor="profile-duration-years" className="space-y-1.5">
-            <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-              年制（学科から自動設定）
-            </span>
-            <Select value={state.durationYears || "UNSELECTED"} disabled>
-              <SelectTrigger id="profile-duration-years">
-                <SelectValue placeholder="学科を選択してください" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="UNSELECTED">学科を選択してください</SelectItem>
-                <SelectItem value="1">1年制</SelectItem>
-                <SelectItem value="2">2年制</SelectItem>
-                <SelectItem value="3">3年制</SelectItem>
-                <SelectItem value="4">4年制</SelectItem>
-              </SelectContent>
-            </Select>
-          </label>
-        </div>
-      </section>
-
-      {/* ─── Section 2: アカウント・ログイン引き継ぎ ─── */}
       {shouldShowLinkedGmailField ? (
-        <section className="rounded-2xl border border-stone-200/90 bg-white p-5 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.25)] dark:border-stone-800/80 dark:bg-stone-900/40">
-          <button
-            type="button"
-            onClick={() => setLoginInfoOpen((prev) => !prev)}
-            className="flex w-full items-center justify-between"
-          >
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-sm dark:bg-emerald-900/40">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-emerald-600 dark:text-emerald-400"
-                >
-                  <title>アカウント連携</title>
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                </svg>
-              </span>
-              <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                卒業後のログイン情報
-              </h3>
-            </div>
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={`shrink-0 text-stone-400 transition-transform duration-200 ${loginInfoOpen ? "rotate-180" : ""}`}
-            >
-              <title>{loginInfoOpen ? "閉じる" : "開く"}</title>
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
-
-          <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              loginInfoOpen ? "mt-4 max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
-            }`}
-          >
-            <div className="rounded-xl border border-stone-100 bg-stone-50/50 p-4 dark:border-stone-800/60 dark:bg-stone-900/40">
-              <p className="text-xs text-stone-600 dark:text-stone-400 mb-4 leading-relaxed">
-                学校のアカウント（
-                <code className="text-[11px] font-semibold text-rose-500 bg-rose-50 dark:bg-rose-950/30 px-1 py-0.5 rounded">
-                  @st.kobedenshi.ac.jp
-                </code>
-                ）は卒業後に失効します。卒業後もこのプロフィールにアクセスして情報を更新できるように、あらかじめ個人のGmailアドレスを登録してください。
-              </p>
-
-              <div className="space-y-4">
-                {currentLinkedGmail ? (
-                  <div className="flex flex-col gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900/50 dark:bg-emerald-950/20 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <span className="block text-[10px] font-bold text-emerald-600 dark:text-emerald-500">
-                        登録済みの引き継ぎアドレス
-                      </span>
-                      <strong className="text-sm text-stone-900 dark:text-stone-100">
-                        {currentLinkedGmail}
-                      </strong>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleUnlinkGmail}
-                      disabled={isLinkingGmail}
-                      className="inline-flex h-8 items-center justify-center rounded-md border border-stone-200 bg-white px-3 text-[11px] font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700/80"
-                    >
-                      登録を解除する
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <label
-                      htmlFor="linked-gmail"
-                      className="block text-[11px] font-semibold text-stone-500 dark:text-stone-400"
-                    >
-                      個人のGmailアドレス
-                    </label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="linked-gmail"
-                        value={linkedGmailInput}
-                        onChange={(e) => setLinkedGmailInput(e.target.value)}
-                        placeholder="example@gmail.com"
-                        type="email"
-                        disabled={isLinkingGmail}
-                        className="flex-1"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleLinkGmail}
-                        disabled={isLinkingGmail || !linkedGmailInput}
-                        className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-stone-900 px-4 text-xs font-bold text-white transition-colors hover:bg-stone-800 disabled:opacity-50 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
-                      >
-                        {isLinkingGmail ? "登録中…" : "登録する"}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {linkedGmailError ? (
-                  <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">
-                    {linkedGmailError}
-                  </p>
-                ) : null}
-                {linkedGmailMessage && !linkedGmailError ? (
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                    {linkedGmailMessage}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </section>
+        <LinkedGmailSection
+          loginInfoOpen={loginInfoOpen}
+          onToggleLoginInfoOpen={() => setLoginInfoOpen((prev) => !prev)}
+          currentLinkedGmail={currentLinkedGmail}
+          linkedGmailInput={linkedGmailInput}
+          onLinkedGmailInputChange={setLinkedGmailInput}
+          onLinkGmail={handleLinkGmail}
+          onUnlinkGmail={handleUnlinkGmail}
+          isLinkingGmail={isLinkingGmail}
+        />
       ) : null}
 
       {showPublicProfileFields ? (
@@ -945,16 +700,6 @@ export function AccountProfileForm({
                       ) : null}
                     </div>
                   </div>
-                  {avatarError ? (
-                    <p className="mt-2 rounded-xl border border-rose-200/80 bg-rose-50/80 px-3 py-2 text-xs text-rose-700 dark:border-rose-800/50 dark:bg-rose-950/30 dark:text-rose-300">
-                      {avatarError}
-                    </p>
-                  ) : null}
-                  {avatarMessage ? (
-                    <p className="mt-2 rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-xs text-emerald-700 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-300">
-                      {avatarMessage}
-                    </p>
-                  ) : null}
                 </div>
 
                 <hr className="border-stone-100 dark:border-stone-800/60" />
@@ -1371,18 +1116,6 @@ export function AccountProfileForm({
       ) : null}
 
       <div className="sticky bottom-0 -mx-1 bg-gradient-to-t from-white via-white to-white/0 px-1 pb-2 pt-4 dark:from-stone-950 dark:via-stone-950 dark:to-stone-950/0">
-        {error ? (
-          <p className="mb-2 rounded-xl border border-rose-200/80 bg-rose-50/80 px-3 py-2 text-xs text-rose-700 dark:border-rose-800/50 dark:bg-rose-950/30 dark:text-rose-300">
-            {error}
-          </p>
-        ) : null}
-
-        {message ? (
-          <p className="mb-2 rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-xs text-emerald-700 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-300">
-            {message}
-          </p>
-        ) : null}
-
         <button
           type="submit"
           disabled={isSaving}

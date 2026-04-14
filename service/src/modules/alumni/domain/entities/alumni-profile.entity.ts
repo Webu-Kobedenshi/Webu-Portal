@@ -62,7 +62,11 @@ export class AlumniProfileDraft {
   }
 
   toData(): AlumniProfileDraftData {
-    return { ...this.data, companyNames: [...this.data.companyNames], skills: [...this.data.skills] };
+    return {
+      ...this.data,
+      companyNames: [...this.data.companyNames],
+      skills: [...this.data.skills],
+    };
   }
 
   private assertPublishable() {

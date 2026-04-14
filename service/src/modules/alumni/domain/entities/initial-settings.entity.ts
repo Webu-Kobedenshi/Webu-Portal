@@ -1,8 +1,8 @@
 import { getDurationYears } from "../department-duration";
 import { DomainValidationError } from "../errors/domain-validation.error";
-import { resolveRoleAndStatus } from "../user-role-transition";
 import type { Department } from "../types/department";
 import type { UserRole, UserStatus } from "../types/user";
+import { resolveRoleAndStatus } from "../user-role-transition";
 
 export type InitialSettingsDraftInput = {
   name: string;

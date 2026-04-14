@@ -1,12 +1,12 @@
 "use client";
 
+import { showErrorToast } from "@/components/atoms/toast";
 import { LogoutButton } from "@/components/molecules/logout-button";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
 
 export function AccountActions() {
   const [isDeleting, setIsDeleting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
 
   const handleDelete = async () => {
     if (!confirm("本当にアカウントを削除しますか？この操作は元に戻せません。")) {
@@ -14,7 +14,6 @@ export function AccountActions() {
     }
 
     setIsDeleting(true);
-    setMessage(null);
 
     try {
       const response = await fetch("/api/account/delete", {
@@ -27,7 +26,7 @@ export function AccountActions() {
 
       await signOut({ callbackUrl: "/login?accountDeleted=1" });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "削除に失敗しました");
+      showErrorToast(error instanceof Error ? error.message : "削除に失敗しました");
     } finally {
       setIsDeleting(false);
     }
@@ -55,12 +54,6 @@ export function AccountActions() {
         </span>
         <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">アカウント操作</h3>
       </div>
-
-      {message ? (
-        <p className="mt-3 rounded-xl border border-rose-200/80 bg-rose-50/80 px-3 py-2 text-xs text-rose-700 dark:border-rose-800/50 dark:bg-rose-950/30 dark:text-rose-300">
-          {message}
-        </p>
-      ) : null}
 
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <LogoutButton className="flex-1" />
